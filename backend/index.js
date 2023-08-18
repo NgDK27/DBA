@@ -1,10 +1,12 @@
 const express = require("express");
+const bodyParser = require("body-parser");
 const dotenv = require("dotenv");
 dotenv.config();
 const db = require("./dbconnection");
 const customerRoute = require("./routes/customer");
 
 const app = express();
+app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.json());
 
 app.get("/", (req, res) => {

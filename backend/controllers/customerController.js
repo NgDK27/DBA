@@ -1,14 +1,7 @@
 const express = require("express");
 const session = require("express-session");
-const bodyParser = require("body-parser");
+const db = require("../dbconnection");
 const bcrypt = require("bcrypt");
-
-const app = express();
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
-app.use(
-  session({ secret: "your_secret_key", resave: true, saveUninitialized: true })
-);
 
 const registerCustomer = async (req, res) => {
   const { username, email, password } = req.body;
