@@ -3,6 +3,7 @@ const bodyParser = require("body-parser");
 const dotenv = require("dotenv");
 dotenv.config();
 const db = require("./dbconnection");
+const login = require("./login");
 const customerRoute = require("./routes/customer");
 
 const app = express();
@@ -21,6 +22,7 @@ db.mysqlConnection.connect((err) => {
   }
 });
 
+app.use("/", login);
 app.use("/customers", customerRoute);
 
 app.listen(8080, () => {
