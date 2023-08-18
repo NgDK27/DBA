@@ -1,17 +1,8 @@
 const express = require("express");
-const session = require("express-session");
 const db = require("./dbconnection");
 const bcrypt = require("bcrypt");
 const app = express();
 const router = express.Router();
-app.use(
-  session({
-    secret: "my key",
-    resave: false,
-    saveUninitialized: true,
-    cookie: { secure: true },
-  })
-);
 
 const login = async (req, res) => {
   const { username, password } = req.body;
@@ -27,11 +18,10 @@ const login = async (req, res) => {
         const user = results[0];
         const passwordMatch = await bcrypt.compare(password, user.password);
         if (passwordMatch) {
-          session.userId = user.user_id;
-          session.role = user.role; // Store user role in session
-          res.send(`hello ${session.role}`);
-          console.log(session);
-          res.status(200).send("Login successful");
+          req.session.userId = user.user_id;
+          req.session.role = user.role; // Store user role in session
+          res.status(201).send(`hello ${req.session.role}`);
+          console.log(req.session);
         } else {
           res.status(401).send("Invalid credentials");
         }
@@ -42,6 +32,18 @@ const login = async (req, res) => {
   }
 };
 
+const logout = (req, res) => {
+  console.log(req.session);
+  req.session.destroy((err) => {
+    if (err) {
+      res.status(500).send("Error logging out");
+    } else {
+      res.redirect("/login"); // Redirect the user after logout
+    }
+  });
+};
+
 router.route("/login").post(login);
+router.route("/logout").get(logout);
 
 module.exports = router;

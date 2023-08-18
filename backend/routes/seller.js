@@ -1,10 +1,9 @@
 const express = require("express");
 const cookieParser = require("cookie-parser");
-const { registerCustomer, alo } = require("../controllers/customerController");
+const { registerSeller } = require("../controllers/sellerController");
 const router = express.Router();
 
 // Register a customer
-router.route("/register").post(registerCustomer);
-router.route("/test").get(alo);
+router.route("/register").post(registerSeller);
 
 module.exports = router;
