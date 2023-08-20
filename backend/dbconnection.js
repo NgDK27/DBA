@@ -1,5 +1,4 @@
 const mysql = require("mysql");
-const mongoose = require("mongoose");
 
 const mysqlConnection = mysql.createConnection({
   host: "localhost",
