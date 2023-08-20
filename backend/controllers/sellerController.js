@@ -27,6 +27,34 @@ const registerSeller = async (req, res) => {
   }
 };
 
-const createProduct = async (req, res) => {};
+const createProduct = async (req, res) => {
+  try {
+    var data = {
+      title: req.body.title,
+      description: req.body.description,
+      price: req.body.price,
+      image: req.file.filename,
+      length: req.body.length,
+      width: req.body.width,
+      height: req.body.height,
+      category_id: req.body.category_id,
+    };
+    console.log(data);
+    let result = await db.mysqlConnection.query(
+      "Insert into product set ? ",
+      [data],
+      function (err, rows) {
+        if (err) {
+          res.send({
+            message: "Error",
+            err,
+          });
+        } else {
+          res.send("success");
+        }
+      }
+    );
+  } catch (error) {}
+};
 
-module.exports = { registerSeller };
+module.exports = { registerSeller, createProduct };
