@@ -5,6 +5,8 @@ const path = require("path");
 const {
   registerSeller,
   createProduct,
+  updateProduct,
+  deleteProduct,
 } = require("../controllers/sellerController");
 const { checkRole } = require("../middlewares/role");
 const router = express.Router();
@@ -31,5 +33,7 @@ router.post(
   upload.single("image"),
   createProduct
 );
+router.put("/products/:id", checkRole("seller"), updateProduct);
+router.delete("/products/:id", checkRole("seller"), deleteProduct);
 
 module.exports = router;
