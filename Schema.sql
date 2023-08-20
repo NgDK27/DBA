@@ -44,7 +44,8 @@ order_id int not null auto_increment,
 customer_id int not null,
 order_date date not null,
 status enum("Done","On-going","Canceled") not null,
-primary key(order_id)
+primary key(order_id),
+foreign key (customer_id) references users(user_id)
 )engine=InnoDB;
 
 CREATE TABLE OrderItem(
@@ -66,4 +67,3 @@ primary key (inventory_id),
 foreign key (warehouse_id) references Warehouse(warehouse_id),
 foreign key (product_id) references Product(product_id)
 )engine=InnoDB;
-
