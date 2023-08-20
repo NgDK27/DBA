@@ -1,4 +1,5 @@
 const express = require("express");
+const mongoose = require("mongoose");
 const session = require("express-session");
 const bodyParser = require("body-parser");
 const dotenv = require("dotenv");
@@ -27,6 +28,15 @@ db.mysqlConnection.connect((err) => {
     console.log("MySQL connected");
   }
 });
+
+mongoose
+  .connect(process.env.MONGO_URL)
+  .then(() => {
+    app.listen(5000, () => {
+      console.log(`mongodb running`);
+    });
+  })
+  .catch((err) => console.log(err));
 
 app.use("/", login);
 app.use("/customers", customerRoute);

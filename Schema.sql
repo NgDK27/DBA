@@ -6,6 +6,18 @@ CREATE TABLE users (
     role ENUM('warehouse_admin', 'seller', 'customer') NOT NULL
 );
 
+CREATE TABLE product (
+    product_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    title VARCHAR(255) NOT NULL,
+    description VARCHAR(255) NOT NULL,
+    price INT NOT NULL,
+    image LONGTEXT, 
+    length INT NOT NULL,
+    width INT NOT NULL,
+    height INT NOT NULL,
+    category_id INT NOT NULL,
+);
+
 CREATE TABLE Category (
 category_id int not null,
 name varchar(50) not null,
@@ -13,19 +25,6 @@ parent_category_id int not null,
 primary key(category_id)
 )engine=InnoDB;
 
-CREATE TABLE Product(
-product_id int not null auto_increment,
-title varchar(255) not null,
-description varchar(255) not null,
-price int not null,
-image longblob, 
-length int not null,
-width int not null,
-height int not null,
-category_id int not null,
-primary key(product_id),
-foreign key(category_id) references Category(category_id)
-)engine=InnoDB;
 
 CREATE TABLE Warehouse(
 warehouse_id int not null auto_increment,
