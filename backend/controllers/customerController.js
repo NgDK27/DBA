@@ -27,8 +27,18 @@ const registerCustomer = async (req, res) => {
   }
 };
 
-const alo = (req, res) => {
-  res.status(201).send(req.session);
+const getAllProducts = (req, res) => {
+  const query = "SELECT * FROM product";
+
+  db.mysqlConnection.query(query, (error, results) => {
+    if (error) {
+      res
+        .status(500)
+        .json({ message: "Error fetching products", error: error.message });
+    } else {
+      res.status(200).json(results);
+    }
+  });
 };
 
-module.exports = { registerCustomer, alo };
+module.exports = { registerCustomer, getAllProducts };

@@ -20,6 +20,18 @@ CREATE TABLE product (
     FOREIGN KEY (seller_id) REFERENCES users(user_id)
 );
 
+
+
+
+
+
+
+
+
+
+
+
+
 CREATE TABLE Category (
 category_id int not null,
 name varchar(50) not null,
