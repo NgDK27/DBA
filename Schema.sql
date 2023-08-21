@@ -1,3 +1,5 @@
+CREATE DATABASE dba;
+
 CREATE TABLE users (
     user_id INT PRIMARY KEY AUTO_INCREMENT,
     username VARCHAR(255) NOT NULL UNIQUE,
@@ -15,54 +17,59 @@ CREATE TABLE product (
     length INT NOT NULL,
     width INT NOT NULL,
     height INT NOT NULL,
+    seller_id INT NOT NULL,
     category_id INT NOT NULL,
+    added_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (seller_id) REFERENCES users(user_id)
 );
 
-CREATE TABLE Category (
-category_id int not null,
-name varchar(50) not null,
-parent_category_id int not null,
-primary key(category_id)
-)engine=InnoDB;
+CREATE TABLE warehouse (
+  warehouse_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+  name VARCHAR(255) NOT NULL,
+  province VARCHAR(255) NOT NULL,
+  city VARCHAR(255) NOT NULL,
+  district VARCHAR(255) NOT NULL,
+  street VARCHAR(255) NOT NULL,
+  number INT NOT NULL,
+  total_area_volume INT NOT NULL
+);
+
+CREATE TABLE order (
+  order_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+  customer_id INT NOT NULL,
+  order_date DATETIME INT NOT NULL,
+  status enum("Accept","Pending","Reject") NOT NULL,
+  FOREIGN KEY (customer_id) REFERENCES users(user_id)
+);
+
+CREATE TABLE orderItem (
+  order_item_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+  order_id INT NOT NULL,
+  product_id INT NOT NULL,
+  quantity INT NOT NULL,
+  FOREIGN KEY (order_id) REFERENCES orders(order_id),
+  FOREIGN KEY (product_id) REFERENCES product(product_id)
+);
+
+-- CREATE TABLE inventory (
+--   inventory_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+--   product_id INT NOT NULL,
+--   warehouse_id INT NOT NULL,
+--   quantity INT NOT NULL,
+--   FOREIGN KEY (warehouse_id) REFERENCES warehouse(warehouse_id),
+--   FOREIGN KEY (product_id) REFERENCES product(product_id)
+-- );
 
 
-CREATE TABLE Warehouse(
-warehouse_id int not null auto_increment,
-name varchar(255) not null,
-province varchar(255) not null,
-city varchar(255) not null,
-district varchar(255) not null,
-street varchar(255) not null,
-number int not null,
-total_area_volume int not null,
-primary key (warehouse_id)
-)engine=InnoDB;
 
-CREATE TABLE Orders(
-order_id int not null auto_increment,
-customer_id int not null,
-order_date date not null,
-status enum("Done","On-going","Canceled") not null,
-primary key(order_id)
-)engine=InnoDB;
 
-CREATE TABLE OrderItem(
-order_item_id int not null auto_increment,
-order_id int not null,
-product_id int not null,
-quantity int not null,
-primary key (order_item_id),
-foreign key (order_id) references Orders(order_id),
-foreign key (product_id) references Product(product_id)
-)engine=InnoDB;
 
-CREATE TABLE Inventory(
-inventory_id int not null auto_increment,
-product_id int not null,
-warehouse_id int not null,
-quantity int not null,
-primary key (inventory_id),
-foreign key (warehouse_id) references Warehouse(warehouse_id),
-foreign key (product_id) references Product(product_id)
-)engine=InnoDB;
+
+
+
+
+
+
+
+
 
