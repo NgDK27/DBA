@@ -4,6 +4,9 @@
 /customers/getAllProducts (minPrice, maxPrice, search, sortField, sortOrder)
 
 /admins/register
+get: /admins/categories
+post: /admins/categories
+update: /admins/categories/:id
 
 /sellers/register
 /sellers/createProduct

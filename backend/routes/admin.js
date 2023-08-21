@@ -1,9 +1,18 @@
 const express = require("express");
 const cookieParser = require("cookie-parser");
-const { registerAdmin } = require("../controllers/adminController");
+const {
+  registerAdmin,
+  createCatagory,
+  getAllCatagories,
+  updateCategory,
+} = require("../controllers/adminController");
+const { checkRole } = require("../middlewares/role");
 const router = express.Router();
 
 // Register a customer
 router.route("/register").post(registerAdmin);
+router.post("/categories", checkRole("warehouse_admin"), createCatagory);
+router.get("/categories", checkRole("warehouse_admin"), getAllCatagories);
+router.put("/categories/:id", checkRole("warehouse_admin"), updateCategory);
 
 module.exports = router;

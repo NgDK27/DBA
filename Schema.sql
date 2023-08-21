@@ -23,6 +23,25 @@ CREATE TABLE product (
     FOREIGN KEY (seller_id) REFERENCES users(user_id)
 );
 
+CREATE TABLE warehouse (
+  warehouse_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+  name VARCHAR(255) NOT NULL,
+  province VARCHAR(255) NOT NULL,
+  city VARCHAR(255) NOT NULL,
+  district VARCHAR(255) NOT NULL,
+  street VARCHAR(255) NOT NULL,
+  number INT NOT NULL,
+  total_area_volume INT NOT NULL
+);
+
+CREATE TABLE inventory (
+  inventory_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+  product_id INT NOT NULL,
+  warehouse_id INT NOT NULL,
+  quantity INT NOT NULL,
+  FOREIGN KEY (warehouse_id) REFERENCES warehouse(warehouse_id),
+  FOREIGN KEY (product_id) REFERENCES product(product_id)
+);
 
 
 
@@ -34,26 +53,6 @@ CREATE TABLE product (
 
 
 
-
-CREATE TABLE Category (
-category_id int not null,
-name varchar(50) not null,
-parent_category_id int not null,
-primary key(category_id)
-)engine=InnoDB;
-
-
-CREATE TABLE Warehouse(
-warehouse_id int not null auto_increment,
-name varchar(255) not null,
-province varchar(255) not null,
-city varchar(255) not null,
-district varchar(255) not null,
-street varchar(255) not null,
-number int not null,
-total_area_volume int not null,
-primary key (warehouse_id)
-)engine=InnoDB;
 
 CREATE TABLE Orders(
 order_id int not null auto_increment,
@@ -73,13 +72,4 @@ foreign key (order_id) references Orders(order_id),
 foreign key (product_id) references Product(product_id)
 )engine=InnoDB;
 
-CREATE TABLE Inventory(
-inventory_id int not null auto_increment,
-product_id int not null,
-warehouse_id int not null,
-quantity int not null,
-primary key (inventory_id),
-foreign key (warehouse_id) references Warehouse(warehouse_id),
-foreign key (product_id) references Product(product_id)
-)engine=InnoDB;
 
