@@ -33,13 +33,13 @@ const login = async (req, res) => {
 };
 
 const logout = (req, res) => {
-  console.log(req.session);
   req.session.destroy((err) => {
     if (err) {
       res.status(500).send("Error logging out");
     } else {
       res.redirect("/login"); // Redirect the user after logout
     }
+    console.log(req.session);
   });
 };
 
