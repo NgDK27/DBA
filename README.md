@@ -1,18 +1,34 @@
 /login
+
 /logout
+
+
 /customers/register
+
 /customers/getAllProducts (minPrice, maxPrice, search, sortField, sortOrder)
 
+
 /admins/register
+
 get: /admins/categories
+
 post: /admins/categories
+
 put: /admins/categories/:id
+
 delete: /admins/categories/:id (only with no products)
 
+
+
 /sellers/register
+
 /sellers/createProduct
+
 put: /sellers/products/:id
+
 delete: /sellers/products/:id
+
+
 
 Category in mongodb: {
 
