@@ -1,12 +1,10 @@
-/login
+post: /login
 
-/logout
+get: /logout
 
+post: /customers/register
 
-/customers/register
-
-/customers/getAllProducts (minPrice, maxPrice, search, sortField, sortOrder)
-
+get: /customers/getAllProducts (minPrice, maxPrice, search, sortField, sortOrder)
 
 /admins/register
 
@@ -18,7 +16,11 @@ put: /admins/categories/:id
 
 delete: /admins/categories/:id (only with no products)
 
+post: /admins/warehouses
 
+put: /admins/warehouses/:id
+
+delete: /admins/warehouses/:id (only with no products)
 
 /sellers/register
 
@@ -27,8 +29,6 @@ delete: /admins/categories/:id (only with no products)
 put: /sellers/products/:id
 
 delete: /sellers/products/:id
-
-
 
 Category in mongodb: {
 

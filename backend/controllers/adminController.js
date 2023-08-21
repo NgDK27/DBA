@@ -80,7 +80,7 @@ const deleteCategory = async (req, res) => {
     if (error) {
       return res
         .status(500)
-        .json({ message: "Error deleting product", error: error.message });
+        .json({ message: "Error deleting category", error: error.message });
     } else {
       for (const category of result) {
         allProductCategory.push(category.category_id);
@@ -109,10 +109,162 @@ const deleteCategory = async (req, res) => {
     }
   });
 };
+
+const createWarehouse = async (req, res) => {
+  try {
+    var data = {
+      name: req.body.name,
+      province: req.body.province,
+      city: req.body.city,
+      district: req.body.district,
+      street: req.body.street,
+      number: req.body.number,
+      total_area_volume: req.body.area,
+    };
+    console.log(data);
+    let result = await db.mysqlConnection.query(
+      "INSERT INTO warehouse SET ? ",
+      [data],
+      function (err, rows) {
+        if (err) {
+          res.send({
+            message: "Error",
+            err,
+          });
+        } else {
+          res.send("success");
+        }
+      }
+    );
+  } catch (error) {}
+};
+
+const updateWarehouse = async (req, res) => {
+  const warehouseId = req.params.id;
+  const { name, province, city, district, street, number } = req.body;
+
+  const updateFields = [];
+  const updateValues = [];
+
+  if (name) {
+    updateFields.push("name = ?");
+    updateValues.push(name);
+  }
+  if (province) {
+    updateFields.push("province = ?");
+    updateValues.push(province);
+  }
+  if (city) {
+    updateFields.push("city = ?");
+    updateValues.push(district);
+  }
+  if (district) {
+    updateFields.push("district = ?");
+    updateValues.push(district);
+  }
+  if (street) {
+    updateFields.push("street = ?");
+    updateValues.push(street);
+  }
+  if (number) {
+    updateFields.push("number = ?");
+    updateValues.push(number);
+  }
+
+  if (updateFields.length === 0) {
+    return res
+      .status(400)
+      .json({ message: "No valid fields provided for update" });
+  }
+
+  const updateQuery = `
+    UPDATE warehouse
+    SET ${updateFields.join(", ")}
+    WHERE warehouse_id = ?`;
+
+  updateValues.push(warehouseId);
+
+  db.mysqlConnection.query(updateQuery, updateValues, (error, result) => {
+    if (error) {
+      res
+        .status(500)
+        .json({ message: "Error updating warehouse", error: error.message });
+    } else if (result.affectedRows === 0) {
+      res.status(404).json({ message: "Warehouse not found" });
+    } else {
+      res.status(200).json({ message: "Warehouse updated successfully" });
+    }
+  });
+};
+
+const deleteWarehouse = async (req, res) => {
+  const name = req.query;
+  const getDeleteWarehouseQuery =
+    "SELECT * FROM warehouse w LEFT JOIN inventory i ON w.warehouse_id = i.warehouse_id LEFT JOIN product p ON i.product_id = p.product_id WHERE p.product_id IS NULL";
+  db.mysqlConnection.query(getDeleteWarehouseQuery, (error, result) => {
+    if (error) {
+      return res.status(500).json({
+        message: "There are no warehouse without products",
+        error: error.message,
+      });
+    } else {
+      for (const warehouse of result) {
+        if (warehouse.name == JSON.parse(JSON.stringify(name)).name) {
+          const deleteWarehouseQuery = "DELETE FROM warehouse WHERE name = ?";
+          db.mysqlConnection.query(
+            deleteWarehouseQuery,
+            [JSON.parse(JSON.stringify(name)).name],
+            (error, result) => {
+              if (error) {
+                return res.status(500).json({
+                  message: "Error deleting warehouse",
+                  error: error.message,
+                });
+              } else {
+                res.status(200).send("Delete successfully");
+              }
+            }
+          );
+        }
+      }
+      res.status(403).send("There are products in this warehouse");
+    }
+  });
+};
+
+const createInventory = async (req, res) => {
+  try {
+    var data = {
+      product_id: req.body.product_id,
+      warehouse_id: req.body.warehouse_id,
+      quantity: req.body.quantity,
+    };
+    console.log(data);
+    let result = await db.mysqlConnection.query(
+      "INSERT INTO inventory SET ? ",
+      [data],
+      function (err, rows) {
+        if (err) {
+          res.send({
+            message: "Error",
+            err,
+          });
+        } else {
+          res.send("success");
+        }
+      }
+    );
+  } catch (error) {}
+};
+
 module.exports = {
   registerAdmin,
   createCatagory,
   getAllCatagories,
   updateCategory,
   deleteCategory,
+  createWarehouse,
+  updateWarehouse,
+  deleteWarehouse,
+  createInventory,
 };
