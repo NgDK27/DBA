@@ -28,9 +28,35 @@ const registerCustomer = async (req, res) => {
 };
 
 const getAllProducts = (req, res) => {
-  const query = "SELECT * FROM product";
+  const { minPrice, maxPrice, search, sortField, sortOrder } = req.query;
 
-  db.mysqlConnection.query(query, (error, results) => {
+  let query = "SELECT * FROM product ";
+  const queryParams = [];
+
+  // Add conditions to the query dynamically
+  if (minPrice && maxPrice) {
+    query += " WHERE price >= ? AND price <= ?";
+    queryParams.push(parseInt(minPrice), parseInt(maxPrice));
+  } else if (minPrice) {
+    query += " WHERE price >= ?";
+    queryParams.push(parseInt(minPrice));
+  } else if (maxPrice) {
+    query += " WHERE price <= ?";
+    queryParams.push(parseInt(maxPrice));
+  }
+  console.log(query);
+
+  if (search) {
+    query += " WHERE (title LIKE ? OR description LIKE ?)";
+    queryParams.push(`%${search}%`, `%${search}%`);
+  }
+
+  // Add ORDER BY clause for sorting
+  if (sortField && (sortOrder === "ASC" || sortOrder === "DESC")) {
+    query += ` ORDER BY ${sortField} ${sortOrder}`;
+  }
+
+  db.mysqlConnection.query(query, queryParams, (error, results) => {
     if (error) {
       res
         .status(500)
