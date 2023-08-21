@@ -3,6 +3,7 @@ const fs = require("fs");
 const path = require("path");
 const db = require("../dbconnection");
 const bcrypt = require("bcrypt");
+const moment = require("moment");
 
 const registerSeller = async (req, res) => {
   const { username, email, password } = req.body;
@@ -41,6 +42,7 @@ const createProduct = async (req, res) => {
       height: req.body.height,
       seller_id: req.session.userid,
       category_id: req.body.category_id,
+      added_time: moment().format("YYYY-MM-DD HH:mm:ss"),
     };
     console.log(data);
     let result = await db.mysqlConnection.query(

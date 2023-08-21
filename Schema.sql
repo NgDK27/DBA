@@ -17,6 +17,7 @@ CREATE TABLE product (
     height INT NOT NULL,
     seller_id INT NOT NULL,
     category_id INT NOT NULL,
+    added_time datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (seller_id) REFERENCES users(user_id)
 );
 
