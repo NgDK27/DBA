@@ -41,7 +41,8 @@ const getCategoryName = async (categoryId) => {
 
 const getAllProducts = async (req, res) => {
   const { minPrice, maxPrice, search, sortField, sortOrder } = req.query;
-  // const cate = await Category.create({ id: 3, name: "TEST2" });
+  // const cate = await Category.create({ id: 3, name: "Books" });
+  // const cate1 = await Category.create({ id: 2, name: "Food" });
   // console.log(cate);
 
   let query = "SELECT * FROM product ";
@@ -109,4 +110,4 @@ const getAllProducts = async (req, res) => {
   });
 };
 
-module.exports = { registerCustomer, getAllProducts };
+module.exports = { registerCustomer, getAllProducts, getCategoryName };
