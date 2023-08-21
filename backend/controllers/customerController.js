@@ -1,6 +1,7 @@
 const express = require("express");
 const db = require("../dbconnection");
 const bcrypt = require("bcrypt");
+const Category = require("../models/category");
 
 const registerCustomer = async (req, res) => {
   const { username, email, password } = req.body;
@@ -27,8 +28,21 @@ const registerCustomer = async (req, res) => {
   }
 };
 
-const getAllProducts = (req, res) => {
+const getCategoryName = async (categoryId) => {
+  try {
+    const category = await Category.findOne({ id: categoryId });
+    return category.name;
+  } catch (error) {
+    // Handle error
+    console.error("Error fetching category name:", error);
+    return null;
+  }
+};
+
+const getAllProducts = async (req, res) => {
   const { minPrice, maxPrice, search, sortField, sortOrder } = req.query;
+  // const cate = await Category.create({ id: 3, name: "TEST2" });
+  // console.log(cate);
 
   let query = "SELECT * FROM product ";
   const queryParams = [];
@@ -62,7 +76,35 @@ const getAllProducts = (req, res) => {
         .status(500)
         .json({ message: "Error fetching products", error: error.message });
     } else {
-      res.status(200).json(results);
+      const getProductData = async (results) => {
+        const productData = [];
+
+        for (const product of results) {
+          const category = await getCategoryName(product.category_id);
+          productData.push({
+            product_id: product.product_id,
+            title: product.title,
+            description: product.description,
+            price: product.price,
+            image: product.image,
+            category: category,
+          });
+        }
+
+        return productData;
+      };
+
+      getProductData(results)
+        .then((productData) => {
+          console.log(productData);
+          res.status(200).json(productData);
+        })
+        .catch((error) => {
+          console.error("Error fetching product data:", error);
+          res
+            .status(500)
+            .json({ message: "Error fetching products", error: error.message });
+        });
     }
   });
 };
