@@ -19,7 +19,7 @@ CREATE TABLE product (
     height INT NOT NULL,
     seller_id INT NOT NULL,
     category_id INT NOT NULL,
-    added_time datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    added_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (seller_id) REFERENCES users(user_id)
 );
 
@@ -34,15 +34,31 @@ CREATE TABLE warehouse (
   total_area_volume INT NOT NULL
 );
 
-CREATE TABLE inventory (
-  inventory_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+CREATE TABLE order (
+  order_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+  customer_id INT NOT NULL,
+  order_date DATETIME INT NOT NULL,
+  status enum("Accept","Pending","Reject") NOT NULL,
+  FOREIGN KEY (customer_id) REFERENCES users(user_id)
+);
+
+CREATE TABLE orderItem (
+  order_item_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+  order_id INT NOT NULL,
   product_id INT NOT NULL,
-  warehouse_id INT NOT NULL,
   quantity INT NOT NULL,
-  FOREIGN KEY (warehouse_id) REFERENCES warehouse(warehouse_id),
+  FOREIGN KEY (order_id) REFERENCES orders(order_id),
   FOREIGN KEY (product_id) REFERENCES product(product_id)
 );
 
+-- CREATE TABLE inventory (
+--   inventory_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+--   product_id INT NOT NULL,
+--   warehouse_id INT NOT NULL,
+--   quantity INT NOT NULL,
+--   FOREIGN KEY (warehouse_id) REFERENCES warehouse(warehouse_id),
+--   FOREIGN KEY (product_id) REFERENCES product(product_id)
+-- );
 
 
 
@@ -54,22 +70,6 @@ CREATE TABLE inventory (
 
 
 
-CREATE TABLE Orders(
-order_id int not null auto_increment,
-customer_id int not null,
-order_date date not null,
-status enum("Done","On-going","Canceled") not null,
-primary key(order_id)
-)engine=InnoDB;
 
-CREATE TABLE OrderItem(
-order_item_id int not null auto_increment,
-order_id int not null,
-product_id int not null,
-quantity int not null,
-primary key (order_item_id),
-foreign key (order_id) references Orders(order_id),
-foreign key (product_id) references Product(product_id)
-)engine=InnoDB;
 
 

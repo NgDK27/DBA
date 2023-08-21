@@ -1,4 +1,4 @@
-/login/
+/login
 /logout
 /customers/register
 /customers/getAllProducts (minPrice, maxPrice, search, sortField, sortOrder)
@@ -6,11 +6,12 @@
 /admins/register
 get: /admins/categories
 post: /admins/categories
-update: /admins/categories/:id
+put: /admins/categories/:id
+delete: /admins/categories/:id (only with no products)
 
 /sellers/register
 /sellers/createProduct
-update: /sellers/products/:id
+put: /sellers/products/:id
 delete: /sellers/products/:id
 
 Category in mongodb: {

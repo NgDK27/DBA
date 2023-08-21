@@ -2,6 +2,8 @@ const express = require("express");
 const db = require("../dbconnection");
 const bcrypt = require("bcrypt");
 const Category = require("../models/category");
+const { all } = require("../routes/customer");
+const session = require("express-session");
 
 const registerAdmin = async (req, res) => {
   const { username, email, password } = req.body;
@@ -31,7 +33,10 @@ const registerAdmin = async (req, res) => {
 const createCatagory = async (req, res) => {
   const { id, name } = req.body;
 
-  const newCategory = await Category.create({ id: id, name: name });
+  const newCategory = await Category.create(
+    { id: id, name: name },
+    { new: true }
+  );
   res.status(200).json(newCategory);
 };
 
@@ -65,9 +70,49 @@ const updateCategory = async (req, res) => {
   }
 };
 
+const deleteCategory = async (req, res) => {
+  const categoryId = req.params.id;
+  req.session.categoryId = req.params.id;
+  const getCategoryIDQuery = "SELECT DISTINCT category_id FROM product";
+  const allProductCategory = [];
+
+  db.mysqlConnection.query(getCategoryIDQuery, async (error, result) => {
+    if (error) {
+      return res
+        .status(500)
+        .json({ message: "Error deleting product", error: error.message });
+    } else {
+      for (const category of result) {
+        allProductCategory.push(category.category_id);
+      }
+      console.log(allProductCategory);
+
+      if (allProductCategory.includes(parseInt(req.session.categoryId))) {
+        res.status(403).send("There are products in this category");
+      } else {
+        try {
+          const deleteCate = await Category.deleteOne(
+            {
+              id: parseInt(req.session.categoryId),
+            },
+            { new: true }
+          ).exec();
+
+          res.status(200).send("Delete successfully");
+        } catch (error) {
+          res.status(500).json({
+            message: "Error deleting product",
+            error: error.message,
+          });
+        }
+      }
+    }
+  });
+};
 module.exports = {
   registerAdmin,
   createCatagory,
   getAllCatagories,
   updateCategory,
+  deleteCategory,
 };

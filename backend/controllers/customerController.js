@@ -33,7 +33,6 @@ const getCategoryName = async (categoryId) => {
     const category = await Category.findOne({ id: categoryId });
     return category.name;
   } catch (error) {
-    // Handle error
     console.error("Error fetching category name:", error);
     return null;
   }
@@ -41,9 +40,6 @@ const getCategoryName = async (categoryId) => {
 
 const getAllProducts = async (req, res) => {
   const { minPrice, maxPrice, search, sortField, sortOrder } = req.query;
-  // const cate = await Category.create({ id: 3, name: "Books" });
-  // const cate1 = await Category.create({ id: 2, name: "Food" });
-  // console.log(cate);
 
   let query = "SELECT * FROM product ";
   const queryParams = [];
@@ -89,6 +85,7 @@ const getAllProducts = async (req, res) => {
             price: product.price,
             image: product.image,
             category: category,
+            added_time: product.added_time,
           });
         }
 
