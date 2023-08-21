@@ -18,7 +18,7 @@ const login = async (req, res) => {
         const user = results[0];
         const passwordMatch = await bcrypt.compare(password, user.password);
         if (passwordMatch) {
-          req.session.userId = user.user_id;
+          req.session.userid = user.user_id;
           req.session.role = user.role; // Store user role in session
           res.status(201).send(`hello ${req.session.role}`);
           console.log(req.session);

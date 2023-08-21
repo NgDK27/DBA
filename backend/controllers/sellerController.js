@@ -39,6 +39,7 @@ const createProduct = async (req, res) => {
       length: req.body.length,
       width: req.body.width,
       height: req.body.height,
+      seller_id: req.session.userid,
       category_id: req.body.category_id,
     };
     console.log(data);
@@ -89,9 +90,10 @@ const updateProduct = (req, res) => {
   const updateQuery = `
     UPDATE product
     SET ${updateFields.join(", ")}
-    WHERE product_id = ?`;
+    WHERE product_id = ? AND seller_id = ?`;
 
   updateValues.push(productId);
+  updateValues.push(req.session.userid);
 
   db.mysqlConnection.query(updateQuery, updateValues, (error, result) => {
     if (error) {
@@ -111,10 +113,10 @@ const deleteProduct = (req, res) => {
 
   // Fetch the image filename before deleting the product
   const getImageFilenameQuery =
-    "SELECT image FROM product WHERE product_id = ?";
+    "SELECT image FROM product WHERE product_id = ? AND seller_id = ?";
   db.mysqlConnection.query(
     getImageFilenameQuery,
-    [productId],
+    [productId, req.session.userid],
     (error, result) => {
       if (error) {
         return res
@@ -129,10 +131,11 @@ const deleteProduct = (req, res) => {
       const imageFilename = result[0].image;
 
       // Delete product
-      const deleteQuery = "DELETE FROM product WHERE product_id = ?";
+      const deleteQuery =
+        "DELETE FROM product WHERE product_id = ? AND seller_id = ?";
       db.mysqlConnection.query(
         deleteQuery,
-        [productId],
+        [productId, req.session.userid],
         (deleteError, deleteResult) => {
           if (deleteError) {
             return res.status(500).json({

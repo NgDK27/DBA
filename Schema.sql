@@ -15,7 +15,9 @@ CREATE TABLE product (
     length INT NOT NULL,
     width INT NOT NULL,
     height INT NOT NULL,
+    seller_id INT NOT NULL,
     category_id INT NOT NULL,
+    FOREIGN KEY (seller_id) REFERENCES users(user_id)
 );
 
 CREATE TABLE Category (
