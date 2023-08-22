@@ -2,11 +2,15 @@ post: /login
 
 get: /logout
 
+customer:
+
 post: /customers/register
 
 get: /customers/getAllProducts (minPrice, maxPrice, search, sortField, sortOrder)
 
-/admins/register
+admin:
+
+post: /admins/register
 
 get: /admins/categories
 
@@ -18,13 +22,21 @@ delete: /admins/categories/:id (only with no products)
 
 post: /admins/warehouses
 
+get: /admins/warehouses/ (all warehouses)
+
+get: /admins/warehouses/:id
+
 put: /admins/warehouses/:id
 
-delete: /admins/warehouses/:id (only with no products)
+delete: /admins/warehouses/:id (only with no products) (name)
 
-/sellers/register
+post: admins/moveProducts (not complete)
 
-/sellers/createProduct
+seller:
+
+post: /sellers/register
+
+post: /sellers/createProduct
 
 put: /sellers/products/:id
 

@@ -2,7 +2,6 @@ const express = require("express");
 const db = require("../dbconnection");
 const bcrypt = require("bcrypt");
 const Category = require("../models/category");
-const { all } = require("../routes/customer");
 const session = require("express-session");
 
 const registerAdmin = async (req, res) => {
@@ -232,6 +231,111 @@ const deleteWarehouse = async (req, res) => {
   });
 };
 
+const getAllWarehouses = async (req, res) => {
+  const query =
+    "SELECT i.warehouse_id, SUM(i.quantity) AS total_quantity, w.total_area_volume as available_area FROM inventory i JOIN warehouse w ON w.warehouse_id = i.warehouse_id JOIN product p ON i.product_id = p.product_id GROUP BY i.warehouse_id";
+  db.mysqlConnection.query(query, (error, result) => {
+    if (error) {
+      res
+        .status(500)
+        .json({ message: "Error fetching warehouses", error: error.message });
+    } else {
+      res.send(result);
+    }
+  });
+};
+
+const getWarehouse = async (req, res) => {
+  const warehouseId = req.params.id;
+  const query =
+    "SELECT p.product_id, SUM(i.quantity) AS total_quantity, (SUM(i.quantity) * (p.length* p.width* p.height)) as occupied_area FROM inventory i JOIN warehouse w ON w.warehouse_id = i.warehouse_id JOIN product p ON i.product_id = p.product_id WHERE i.warehouse_id = ? GROUP BY i.warehouse_id, p.product_id";
+  const avalableArea =
+    "SELECT w.total_area_volume FROM warehouse w WHERE w.warehouse_id = ?";
+  Promise.all([
+    new Promise((resolve, reject) => {
+      db.mysqlConnection.query(query, warehouseId, (err, results) => {
+        if (err) reject(err);
+        else resolve(results);
+      });
+    }),
+    new Promise((resolve, reject) => {
+      db.mysqlConnection.query(avalableArea, warehouseId, (err, results) => {
+        if (err) reject(err);
+        else resolve(results);
+      });
+    }),
+  ])
+    .then(([result1, result2]) => {
+      res.send({ result1, result2 });
+    })
+    .catch((err) => {
+      console.log(err);
+      res.status(500).send("Error retrieving data");
+    });
+};
+
+// const moveProducts = async (req, res) => {
+//   const { sourceWarehouseId, destinationWarehouseId, productId, quantity } =
+//     req.body;
+
+//   try {
+//     await connection.beginTransaction();
+
+//     // Step 4: Update source warehouse inventory
+//     await connection.query(
+//       "UPDATE inventory SET quantity = quantity - ? WHERE warehouse_id = ? AND product_id = ?",
+//       [quantity, sourceWarehouseId, productId]
+//     );
+
+//     // Step 5: Update destination warehouse inventory
+//     const [existingInventoryRow] = await connection.query(
+//       "SELECT quantity FROM inventory WHERE warehouse_id = ? AND product_id = ?",
+//       [destinationWarehouseId, productId]
+//     );
+//     if (existingInventoryRow) {
+//       await connection.query(
+//         "UPDATE inventory SET quantity = quantity + ? WHERE warehouse_id = ? AND product_id = ?",
+//         [quantity, destinationWarehouseId, productId]
+//       );
+//     } else {
+//       await connection.query(
+//         "INSERT INTO inventory (warehouse_id, product_id, quantity) VALUES (?, ?, ?)",
+//         [destinationWarehouseId, productId, quantity]
+//       );
+//     }
+
+//     // Step 6: Update warehouse areas
+//     const [productDimensions] = await connection.query(
+//       "SELECT length, width, height FROM product WHERE product_id = ?",
+//       [productId]
+//     );
+//     const requiredArea =
+//       productDimensions[0].length *
+//       productDimensions[0].width *
+//       productDimensions[0].height *
+//       quantity;
+//     await connection.query(
+//       "UPDATE warehouse SET total_area_volume = total_area_volume - ? WHERE warehouse_id = ?",
+//       [requiredArea, sourceWarehouseId]
+//     );
+//     await connection.query(
+//       "UPDATE warehouse SET total_area_volume = total_area_volume + ? WHERE warehouse_id = ?",
+//       [requiredArea, destinationWarehouseId]
+//     );
+
+//     // Step 7: Commit the transaction
+//     await connection.commit();
+//     res.json({ message: "Products moved between warehouses." });
+//   } catch (error) {
+//     // Rollback the transaction in case of an error
+//     await connection.rollback();
+//     console.error("Error:", error);
+//     res.status(500).json({ message: "An error occurred." });
+//   } finally {
+//     connection.end();
+//   }
+// };
+
 const createInventory = async (req, res) => {
   try {
     var data = {
@@ -267,4 +371,7 @@ module.exports = {
   updateWarehouse,
   deleteWarehouse,
   createInventory,
+  getAllWarehouses,
+  getWarehouse,
+  // moveProducts,
 };

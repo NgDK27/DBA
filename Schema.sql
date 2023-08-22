@@ -34,6 +34,15 @@ CREATE TABLE warehouse (
   total_area_volume INT NOT NULL
 );
 
+CREATE TABLE inventory (
+  inventory_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+  product_id INT NOT NULL,
+  warehouse_id INT NOT NULL,
+  quantity INT NOT NULL,
+  FOREIGN KEY (warehouse_id) REFERENCES warehouse(warehouse_id),
+  FOREIGN KEY (product_id) REFERENCES product(product_id)
+);
+
 CREATE TABLE order (
   order_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
   customer_id INT NOT NULL,
@@ -51,14 +60,12 @@ CREATE TABLE orderItem (
   FOREIGN KEY (product_id) REFERENCES product(product_id)
 );
 
--- CREATE TABLE inventory (
---   inventory_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
---   product_id INT NOT NULL,
---   warehouse_id INT NOT NULL,
---   quantity INT NOT NULL,
---   FOREIGN KEY (warehouse_id) REFERENCES warehouse(warehouse_id),
---   FOREIGN KEY (product_id) REFERENCES product(product_id)
--- );
+
+SELECT i.warehouse_id, p.product_id, SUM(i.quantity) AS total_quantity
+FROM inventory i
+JOIN product p ON i.product_id = p.product_id
+WHERE i.warehouse_id = ?
+GROUP BY i.warehouse_id, p.product_id;
 
 
 
