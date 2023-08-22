@@ -1,0 +1,61 @@
+.formButton{
+    border: none;
+    padding: 10px;
+    background-color: rgb(244, 142, 74);
+    color: white;
+    font-weight: bold;
+}
+
+.register-form, .form-container{
+    display: flex;
+    flex-direction: column;
+    margin-left: 50px;
+    gap: 20px;
+}
+
+.register-form{
+    padding: 5rem;
+    background-color: white;
+}
+
+.reg-header{
+    color: black;
+    font-size:large;
+    align-items: center;
+    padding-bottom: 5px;
+}
+
+.App{
+    min-height: 100vh;
+    display:flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: white;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+    background-color: #000083
+    ;
+}
+
+.header {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: auto;
+    height: auto;
+    width: auto;
+    font-family: "MoskauGrotesk-Medium";
+ }
+
+ @font-face {
+    font-family: "MoskauGrotesk-Medium";
+    src: url(../public/MoskauGrotesk-Medium.ttf)
+ }
+ 
+ .input{
+    margin: 0.5rem 0;
+    padding: 1rem;
+    border: none;
+ }

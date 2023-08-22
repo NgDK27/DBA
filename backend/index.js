@@ -32,7 +32,7 @@ db.mysqlConnection.connect((err) => {
 mongoose
   .connect(process.env.MONGO_URL)
   .then(() => {
-    app.listen(5000, () => {
+    app.listen(5001, () => {
       console.log(`mongodb running`);
     });
   })
