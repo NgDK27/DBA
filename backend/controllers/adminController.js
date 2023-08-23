@@ -1,4 +1,5 @@
 const express = require("express");
+const util = require("util");
 const db = require("../dbconnection");
 const bcrypt = require("bcrypt");
 const Category = require("../models/category");
@@ -277,31 +278,37 @@ const getWarehouse = async (req, res) => {
 const moveProducts = async (req, res) => {
   const { sourceWarehouseId, destinationWarehouseId, productId, quantity } =
     req.body;
+  const queryAsync = util
+    .promisify(db.mysqlConnection.query)
+    .bind(db.mysqlConnection);
   try {
     db.mysqlConnection.beginTransaction();
 
     // Step 4: Update source warehouse inventory
-    db.mysqlConnection.query(
+
+    await queryAsync(
       "UPDATE inventory SET quantity = quantity - ? WHERE warehouse_id = ? AND product_id = ?",
       [quantity, sourceWarehouseId, productId]
     );
 
     // Step 5: Update destination warehouse inventory
-    const existingInventoryRow = db.mysqlConnection.query(
+    const existingInventoryRow = await queryAsync(
       "SELECT quantity FROM inventory WHERE warehouse_id = ? AND product_id = ?",
       [destinationWarehouseId, productId]
     );
 
-    if (existingInventoryRow) {
-      db.mysqlConnection.query(
+    if (existingInventoryRow.length > 0) {
+      await queryAsync(
         "UPDATE inventory SET quantity = quantity + ? WHERE warehouse_id = ? AND product_id = ?",
         [quantity, destinationWarehouseId, productId]
       );
+      console.log("test");
     } else {
-      db.mysqlConnection.query(
-        "INSERT INTO inventory (warehouse_id, product_id, quantity) VALUES (?, ?, ?)",
-        [destinationWarehouseId, productId, quantity]
+      await queryAsync(
+        "INSERT INTO inventory (product_id, warehouse_id, quantity) VALUES (?, ?, ?)",
+        [productId, destinationWarehouseId, quantity]
       );
+      console.log("alo");
     }
 
     // Step 6: Update warehouse areas
@@ -330,11 +337,11 @@ const moveProducts = async (req, res) => {
       // Next part
 
       await Promise.all([
-        db.mysqlConnection.query(
+        queryAsync(
           "UPDATE warehouse SET total_area_volume = total_area_volume - ? WHERE warehouse_id = ?",
           [requiredArea, sourceWarehouseId]
         ),
-        db.mysqlConnection.query(
+        queryAsync(
           "UPDATE warehouse SET total_area_volume = total_area_volume + ? WHERE warehouse_id = ?",
           [requiredArea, destinationWarehouseId]
         ),
@@ -343,16 +350,14 @@ const moveProducts = async (req, res) => {
 
     // Step 7: Commit the transaction
 
-    await db.mysqlConnection.commit();
+    db.mysqlConnection.commit();
     console.log("oke");
-    res.json({ message: "Products moved between warehouses." });
+    await res.json({ message: "Products moved between warehouses." });
   } catch (error) {
     // Rollback the transaction in case of an error
-    await db.mysqlConnection.rollback();
+    db.mysqlConnection.rollback();
     console.error("Error:", error);
-    res.status(500).json({ message: "An error occurred." });
-  } finally {
-    await db.mysqlConnection.end();
+    await res.status(500).json({ message: "An error occurred." });
   }
 };
 
