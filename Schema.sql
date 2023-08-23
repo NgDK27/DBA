@@ -5,65 +5,76 @@ CREATE TABLE users (
     password VARCHAR(255) NOT NULL,
     role ENUM('warehouse_admin', 'seller', 'customer') NOT NULL
 );
+ALTER TABLE users
+ADD INDEX index_username(username),
+ADD INDEX index_email(email);
+/* username and email are commonly used for lookups */
 
-CREATE TABLE Category (
-category_id int not null,
-name varchar(50) not null,
-parent_category_id int not null,
-primary key(category_id)
-)engine=InnoDB;
+CREATE TABLE product (
+    product_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    title VARCHAR(255) NOT NULL,
+    description VARCHAR(255) NOT NULL,
+    price INT NOT NULL,
+    image LONGTEXT, 
+    length INT NOT NULL,
+    width INT NOT NULL,
+    height INT NOT NULL,
+    seller_id INT NOT NULL,
+    category_id INT NOT NULL,
+    added_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (seller_id) REFERENCES users(user_id)
+);
+ALTER TABLE product
+ADD INDEX index_title (title),
+ADD INDEX index_seller_id (seller_id),
+ADD INDEX index_category_id (category_id);
+/* title, seller_id and category_id are most likely used for filtering and joins */
 
-CREATE TABLE Product(
-product_id int not null auto_increment,
-title varchar(255) not null,
-description varchar(255) not null,
-price int not null,
-image longblob, 
-length int not null,
-width int not null,
-height int not null,
-category_id int not null,
-primary key(product_id),
-foreign key(category_id) references Category(category_id)
-)engine=InnoDB;
+CREATE TABLE warehouse (
+  warehouse_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+  name VARCHAR(255) NOT NULL UNIQUE,
+  province VARCHAR(255) NOT NULL,
+  city VARCHAR(255) NOT NULL,
+  district VARCHAR(255) NOT NULL,
+  street VARCHAR(255) NOT NULL,
+  number INT NOT NULL,
+  total_area_volume INT NOT NULL
+);
 
-CREATE TABLE Warehouse(
-warehouse_id int not null auto_increment,
-name varchar(255) not null,
-province varchar(255) not null,
-city varchar(255) not null,
-district varchar(255) not null,
-street varchar(255) not null,
-number int not null,
-total_area_volume int not null,
-primary key (warehouse_id)
-)engine=InnoDB;
+CREATE TABLE inventory (
+  inventory_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+  product_id INT NOT NULL,
+  warehouse_id INT NOT NULL,
+  quantity INT NOT NULL,
+  FOREIGN KEY (warehouse_id) REFERENCES warehouse(warehouse_id),
+  FOREIGN KEY (product_id) REFERENCES product(product_id)
+);
 
-CREATE TABLE Orders(
-order_id int not null auto_increment,
-customer_id int not null,
-order_date date not null,
-status enum("Done","On-going","Canceled") not null,
-primary key(order_id),
-foreign key (customer_id) references users(user_id)
-)engine=InnoDB;
+CREATE TABLE orders (
+  order_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+  customer_id INT NOT NULL,
+  order_date DATETIME NOT NULL,
+  status enum("Accept","Pending","Reject") NOT NULL,
+  FOREIGN KEY (customer_id) REFERENCES users(user_id)
+);
+ALTER TABLE orders
+ADD INDEX index_customer_id (customer_id); /*for join and filtering*/
+ALTER TABLE orders
+PARTITION BY RANGE (YEAR(order_date)) (
+    PARTITION p2020 VALUES LESS THAN (2021),
+    PARTITION p2021 VALUES LESS THAN (2022),
+    PARTITION p2022 VALUES LESS THAN (MAXVALUE)
+);
 
-CREATE TABLE OrderItem(
-order_item_id int not null auto_increment,
-order_id int not null,
-product_id int not null,
-quantity int not null,
-primary key (order_item_id),
-foreign key (order_id) references Orders(order_id),
-foreign key (product_id) references Product(product_id)
-)engine=InnoDB;
-
-CREATE TABLE Inventory(
-inventory_id int not null auto_increment,
-product_id int not null,
-warehouse_id int not null,
-quantity int not null,
-primary key (inventory_id),
-foreign key (warehouse_id) references Warehouse(warehouse_id),
-foreign key (product_id) references Product(product_id)
-)engine=InnoDB;
+CREATE TABLE orderItem (
+  order_item_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+  order_id INT NOT NULL,
+  product_id INT NOT NULL,
+  quantity INT NOT NULL,
+  FOREIGN KEY (order_id) REFERENCES orders(order_id),
+  FOREIGN KEY (product_id) REFERENCES product(product_id)
+);
+ALTER TABLE orderItem
+ADD INDEX index_order_id (order_id),
+ADD INDEX index_product_id (product_id);
+/* for join and filtering */
