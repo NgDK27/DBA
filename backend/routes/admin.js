@@ -12,7 +12,7 @@ const {
   createInventory,
   getAllWarehouses,
   getWarehouse,
-  // moveProducts,
+  moveProducts,
 } = require("../controllers/adminController");
 const { checkRole } = require("../middlewares/role");
 const router = express.Router();
@@ -28,7 +28,7 @@ router.get("/warehouses", checkRole("warehouse_admin"), getAllWarehouses);
 router.get("/warehouses/:id", checkRole("warehouse_admin"), getWarehouse);
 router.put("/warehouses/:id", checkRole("warehouse_admin"), updateWarehouse);
 router.delete("/warehouses/", checkRole("warehouse_admin"), deleteWarehouse);
-// router.post("/moveProducts", checkRole("warehouse_admin"), moveProducts);
+router.post("/moveProducts", checkRole("warehouse_admin"), moveProducts);
 
 router.post("/inventory", checkRole("warehouse_admin"), createInventory);
 

@@ -274,67 +274,87 @@ const getWarehouse = async (req, res) => {
     });
 };
 
-// const moveProducts = async (req, res) => {
-//   const { sourceWarehouseId, destinationWarehouseId, productId, quantity } =
-//     req.body;
+const moveProducts = async (req, res) => {
+  const { sourceWarehouseId, destinationWarehouseId, productId, quantity } =
+    req.body;
+  try {
+    db.mysqlConnection.beginTransaction();
 
-//   try {
-//     await connection.beginTransaction();
+    // Step 4: Update source warehouse inventory
+    db.mysqlConnection.query(
+      "UPDATE inventory SET quantity = quantity - ? WHERE warehouse_id = ? AND product_id = ?",
+      [quantity, sourceWarehouseId, productId]
+    );
 
-//     // Step 4: Update source warehouse inventory
-//     await connection.query(
-//       "UPDATE inventory SET quantity = quantity - ? WHERE warehouse_id = ? AND product_id = ?",
-//       [quantity, sourceWarehouseId, productId]
-//     );
+    // Step 5: Update destination warehouse inventory
+    const existingInventoryRow = db.mysqlConnection.query(
+      "SELECT quantity FROM inventory WHERE warehouse_id = ? AND product_id = ?",
+      [destinationWarehouseId, productId]
+    );
 
-//     // Step 5: Update destination warehouse inventory
-//     const [existingInventoryRow] = await connection.query(
-//       "SELECT quantity FROM inventory WHERE warehouse_id = ? AND product_id = ?",
-//       [destinationWarehouseId, productId]
-//     );
-//     if (existingInventoryRow) {
-//       await connection.query(
-//         "UPDATE inventory SET quantity = quantity + ? WHERE warehouse_id = ? AND product_id = ?",
-//         [quantity, destinationWarehouseId, productId]
-//       );
-//     } else {
-//       await connection.query(
-//         "INSERT INTO inventory (warehouse_id, product_id, quantity) VALUES (?, ?, ?)",
-//         [destinationWarehouseId, productId, quantity]
-//       );
-//     }
+    if (existingInventoryRow) {
+      db.mysqlConnection.query(
+        "UPDATE inventory SET quantity = quantity + ? WHERE warehouse_id = ? AND product_id = ?",
+        [quantity, destinationWarehouseId, productId]
+      );
+    } else {
+      db.mysqlConnection.query(
+        "INSERT INTO inventory (warehouse_id, product_id, quantity) VALUES (?, ?, ?)",
+        [destinationWarehouseId, productId, quantity]
+      );
+    }
 
-//     // Step 6: Update warehouse areas
-//     const [productDimensions] = await connection.query(
-//       "SELECT length, width, height FROM product WHERE product_id = ?",
-//       [productId]
-//     );
-//     const requiredArea =
-//       productDimensions[0].length *
-//       productDimensions[0].width *
-//       productDimensions[0].height *
-//       quantity;
-//     await connection.query(
-//       "UPDATE warehouse SET total_area_volume = total_area_volume - ? WHERE warehouse_id = ?",
-//       [requiredArea, sourceWarehouseId]
-//     );
-//     await connection.query(
-//       "UPDATE warehouse SET total_area_volume = total_area_volume + ? WHERE warehouse_id = ?",
-//       [requiredArea, destinationWarehouseId]
-//     );
+    // Step 6: Update warehouse areas
 
-//     // Step 7: Commit the transaction
-//     await connection.commit();
-//     res.json({ message: "Products moved between warehouses." });
-//   } catch (error) {
-//     // Rollback the transaction in case of an error
-//     await connection.rollback();
-//     console.error("Error:", error);
-//     res.status(500).json({ message: "An error occurred." });
-//   } finally {
-//     connection.end();
-//   }
-// };
+    async function getAreaResult(productId) {
+      const areaQuery =
+        "SELECT (p.length * p.width * p.height) as area FROM product p WHERE p.product_id = ?";
+
+      return new Promise((resolve, reject) => {
+        db.mysqlConnection.query(areaQuery, productId, (error, result) => {
+          if (error) {
+            console.error("Error fetching area information:", error.message);
+            reject(error);
+          } else {
+            const areaObject = JSON.parse(JSON.stringify(result));
+            resolve(areaObject[0].area);
+          }
+        });
+      });
+    }
+
+    (async () => {
+      const productArea = await getAreaResult(productId);
+      const requiredArea = productArea * quantity;
+      console.log(requiredArea);
+      // Next part
+
+      await Promise.all([
+        db.mysqlConnection.query(
+          "UPDATE warehouse SET total_area_volume = total_area_volume - ? WHERE warehouse_id = ?",
+          [requiredArea, sourceWarehouseId]
+        ),
+        db.mysqlConnection.query(
+          "UPDATE warehouse SET total_area_volume = total_area_volume + ? WHERE warehouse_id = ?",
+          [requiredArea, destinationWarehouseId]
+        ),
+      ]);
+    })();
+
+    // Step 7: Commit the transaction
+
+    await db.mysqlConnection.commit();
+    console.log("oke");
+    res.json({ message: "Products moved between warehouses." });
+  } catch (error) {
+    // Rollback the transaction in case of an error
+    await db.mysqlConnection.rollback();
+    console.error("Error:", error);
+    res.status(500).json({ message: "An error occurred." });
+  } finally {
+    await db.mysqlConnection.end();
+  }
+};
 
 const createInventory = async (req, res) => {
   try {
@@ -373,5 +393,5 @@ module.exports = {
   createInventory,
   getAllWarehouses,
   getWarehouse,
-  // moveProducts,
+  moveProducts,
 };
