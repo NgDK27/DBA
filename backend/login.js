@@ -20,7 +20,8 @@ const login = async (req, res) => {
         if (passwordMatch) {
           req.session.userid = user.user_id;
           req.session.role = user.role; // Store user role in session
-          res.status(201).send(`hello ${req.session.role}`);
+          //res.status(201).send(`hello ${req.session.role}`);
+          res.status(201).json({ role: req.session.role });
           console.log(req.session);
         } else {
           res.status(401).send("Invalid credentials");

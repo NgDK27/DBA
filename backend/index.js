@@ -9,9 +9,11 @@ const login = require("./login");
 const customerRoute = require("./routes/customer");
 const adminRoute = require("./routes/admin");
 const sellerRoute = require("./routes/seller");
+const cors = require('cors')
 
 const app = express();
 app.use(bodyParser.urlencoded({ extended: false }));
+app.use(cors());
 app.use(express.json());
 app.use(
   session({ secret: "your_secret_key", resave: true, saveUninitialized: true })
