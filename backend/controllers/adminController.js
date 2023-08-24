@@ -284,14 +284,14 @@ const moveProducts = async (req, res) => {
   try {
     db.mysqlConnection.beginTransaction();
 
-    // Step 4: Update source warehouse inventory
+    // Step 1: Update source warehouse inventory
 
     await queryAsync(
       "UPDATE inventory SET quantity = quantity - ? WHERE warehouse_id = ? AND product_id = ?",
       [quantity, sourceWarehouseId, productId]
     );
 
-    // Step 5: Update destination warehouse inventory
+    // Step 2: Update destination warehouse inventory
     const existingInventoryRow = await queryAsync(
       "SELECT quantity FROM inventory WHERE warehouse_id = ? AND product_id = ?",
       [destinationWarehouseId, productId]
@@ -302,16 +302,14 @@ const moveProducts = async (req, res) => {
         "UPDATE inventory SET quantity = quantity + ? WHERE warehouse_id = ? AND product_id = ?",
         [quantity, destinationWarehouseId, productId]
       );
-      console.log("test");
     } else {
       await queryAsync(
         "INSERT INTO inventory (product_id, warehouse_id, quantity) VALUES (?, ?, ?)",
         [productId, destinationWarehouseId, quantity]
       );
-      console.log("alo");
     }
 
-    // Step 6: Update warehouse areas
+    // Step 3: Update warehouse areas
 
     async function getAreaResult(productId) {
       const areaQuery =
@@ -333,7 +331,7 @@ const moveProducts = async (req, res) => {
     (async () => {
       const productArea = await getAreaResult(productId);
       const requiredArea = productArea * quantity;
-      console.log(requiredArea);
+
       // Next part
 
       await Promise.all([
@@ -348,10 +346,10 @@ const moveProducts = async (req, res) => {
       ]);
     })();
 
-    // Step 7: Commit the transaction
+    // Step 4: Commit the transaction
 
     db.mysqlConnection.commit();
-    console.log("oke");
+
     await res.json({ message: "Products moved between warehouses." });
   } catch (error) {
     // Rollback the transaction in case of an error

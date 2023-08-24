@@ -1,5 +1,8 @@
 const express = require("express");
 const mongoose = require("mongoose");
+const fs = require("fs");
+const https = require("https");
+const helmet = require("helmet");
 const session = require("express-session");
 const bodyParser = require("body-parser");
 const cors = require("cors");
@@ -15,13 +18,18 @@ const app = express();
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.json());
 app.use(cors());
+app.use(helmet());
 app.use(
-  session({ secret: "your_secret_key", resave: true, saveUninitialized: true })
+  session({
+    secret: "your_secret_key",
+    resave: true,
+    saveUninitialized: true,
+    cookie: {
+      secure: true, // Set to true when using HTTPS
+      httpOnly: true,
+    },
+  })
 );
-
-app.get("/", (req, res) => {
-  res.send("Hello");
-});
 
 db.mysqlConnection.connect((err) => {
   if (err) {
@@ -31,6 +39,35 @@ db.mysqlConnection.connect((err) => {
   }
 });
 
+// Redirect HTTP to HTTPS
+app.use((req, res, next) => {
+  if (!req.secure) {
+    // Redirect to HTTPS version of the same URL
+    const httpsUrl = `https://${req.headers.host}${req.url}`;
+    return res.redirect(301, httpsUrl);
+  }
+  next();
+});
+
+// Set up HTTPS server
+const options = {
+  key: fs.readFileSync("./security/private.key"),
+  cert: fs.readFileSync("./security/certificate.crt"),
+};
+
+https.createServer(options, app).listen(443, () => {
+  console.log("Server running on port 443 (HTTPS)");
+});
+
+app.get("/", (req, res) => {
+  res.send("Hello");
+});
+
+app.use("/", login);
+app.use("/customers", customerRoute);
+app.use("/admins", adminRoute);
+app.use("/sellers", sellerRoute);
+
 mongoose
   .connect(process.env.MONGO_URL)
   .then(() => {
@@ -39,12 +76,3 @@ mongoose
     });
   })
   .catch((err) => console.log(err));
-
-app.use("/", login);
-app.use("/customers", customerRoute);
-app.use("/admins", adminRoute);
-app.use("/sellers", sellerRoute);
-
-app.listen(8080, () => {
-  console.log("Server running on 8080");
-});

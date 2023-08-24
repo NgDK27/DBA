@@ -1,5 +1,4 @@
 const express = require("express");
-const fs = require("fs");
 const path = require("path");
 const db = require("../dbconnection");
 const bcrypt = require("bcrypt");
@@ -169,8 +168,6 @@ const deleteProduct = (req, res) => {
     }
   );
 };
-
-
 
 module.exports = {
   registerSeller,
