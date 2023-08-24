@@ -1,19 +1,24 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 
-export default function RegisterPage  () {
-  const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [role, setRole] = useState('customer'); // Default role
+export default function RegisterPage() {
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [role, setRole] = useState("customer");
 
   const handleRegister = async () => {
     try {
-      const response = await fetch(`/${role}s/register`, {
-        method: 'POST',
+      const formData = new URLSearchParams();
+      formData.append("username", username);
+      formData.append("email", email);
+      formData.append("password", password);
+
+      const response = await fetch(`https://localhost/${role}s/register`, {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/x-www-form-urlencoded",
         },
-        body: JSON.stringify({ username, email, password }),
+        body: formData.toString(),
       });
 
       if (response.ok) {
@@ -61,5 +66,4 @@ export default function RegisterPage  () {
       <button onClick={handleRegister}>Register</button>
     </div>
   );
-};
-
+}
