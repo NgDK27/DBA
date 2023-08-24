@@ -4,13 +4,13 @@ import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom';
 
 const Login = () => {
-    const [Customer,setCustomers] = useState(
+    const [CustomerUser,setCustomers] = useState(
         {
           username: "",
           password:"",
         }
       );
-    
+
       const navigate = useNavigate()
     
       const handleChange = (e) =>{
@@ -20,9 +20,9 @@ const Login = () => {
       const handleClick = async e =>{
         e.preventDefault()
         try {
-          const res = await axios.post("http://localhost:8080/login", Customer);
+          const res = await axios.post("http://localhost:8080/login", CustomerUser);
           if (res.data.role === "customer"){
-            navigate("/Customer")
+            navigate("/Customer", {state:{CustomerUser}})
           } else if (res.data.role === "seller"){
             navigate("/Seller")
           } else if (res.data.role === "warehouse_admin"){

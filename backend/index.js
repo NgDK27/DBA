@@ -10,14 +10,21 @@ const customerRoute = require("./routes/customer");
 const adminRoute = require("./routes/admin");
 const sellerRoute = require("./routes/seller");
 const cors = require('cors')
-
 const app = express();
+const path = require('path');
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use(cors());
+
+const corsOptions = {
+  origin: 'http://localhost:3000',
+  credentials: true
+};
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(
   session({ secret: "your_secret_key", resave: true, saveUninitialized: true })
 );
+
+app.use('/images', express.static(path.join(__dirname, 'images')));
 
 app.get("/", (req, res) => {
   res.send("Hello");

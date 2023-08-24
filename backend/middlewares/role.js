@@ -5,6 +5,7 @@ function checkRole(role) {
       console.log("oke");
       next(); // User has the required role, proceed to the route handler
     } else {
+      console.log(req.session.role)
       res.status(403).send("Access denied"); // User doesn't have the required role
     }
   };
