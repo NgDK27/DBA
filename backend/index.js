@@ -49,16 +49,6 @@ app.use((req, res, next) => {
   next();
 });
 
-// Set up HTTPS server
-const options = {
-  key: fs.readFileSync("./security/private.key"),
-  cert: fs.readFileSync("./security/certificate.crt"),
-};
-
-https.createServer(options, app).listen(443, () => {
-  console.log("Server running on port 443 (HTTPS)");
-});
-
 app.get("/", (req, res) => {
   res.send("Hello");
 });
@@ -76,3 +66,13 @@ mongoose
     });
   })
   .catch((err) => console.log(err));
+
+// Set up HTTPS server
+const options = {
+  key: fs.readFileSync("./security/private.key", "utf-8"),
+  cert: fs.readFileSync("./security/certificate.crt", "utf8"),
+};
+
+https.createServer(options, app).listen(443, () => {
+  console.log("Server running on port 443 (HTTPS)");
+});

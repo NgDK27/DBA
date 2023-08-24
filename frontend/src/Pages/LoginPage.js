@@ -9,17 +9,20 @@ export default function LoginPage() {
   const { setUser } = useContext(UserContext);
   const handleLogin = async () => {
     try {
-      const response = await fetch("/login", {
+      const formData = new URLSearchParams();
+      formData.append("username", username);
+      formData.append("password", password);
+
+      const response = await fetch("https://localhost/login", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
+          "Content-Type": "application/x-www-form-urlencoded",
         },
-        body: JSON.stringify({ username, password }),
+        body: formData.toString(),
       });
-      console.log(response);
+
       if (response.ok) {
         const data = await response.text();
-        console.log("login ok");
         const role = data.split(" ")[1];
         setUser(role);
         setRedirect(true);
