@@ -8,6 +8,8 @@ post: /customers/register
 
 get: /customers/getAllProducts (minPrice, maxPrice, search, sortField, sortOrder)
 
+get: /customers/getProduct/:id
+
 admin:
 
 post: /admins/register
@@ -41,6 +43,10 @@ post: /sellers/createProduct
 put: /sellers/products/:id
 
 delete: /sellers/products/:id
+
+get: /getAllProducts
+
+get: /getProduct/:id
 
 Category in mongodb: {
 

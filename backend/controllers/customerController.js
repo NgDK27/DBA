@@ -111,4 +111,54 @@ const getAllProducts = async (req, res) => {
   });
 };
 
-module.exports = { registerCustomer, getAllProducts, getCategoryName };
+const getProduct = async (req, res) => {
+  const productId = req.params.id;
+  const query =
+    "SELECT p.product_id, p.title, p.description, p.price, p.image, p.category_id, SUM(i.quantity) AS available_quantity, u.username AS seller FROM product p JOIN inventory i ON p.product_id = i.product_id JOIN users u ON p.seller_id = u.user_id WHERE p.product_id = ? GROUP BY p.product_id, p.title, p.description, p.price, p.image";
+  db.mysqlConnection.query(query, productId, (error, results) => {
+    if (error) {
+      return res
+        .status(500)
+        .json({ message: "Error deleting category", error: error.message });
+    } else {
+      const getProductData = async (results) => {
+        const productData = [];
+
+        for (const product of results) {
+          const category = await getCategoryName(product.category_id);
+          productData.push({
+            product_id: product.product_id,
+            title: product.title,
+            description: product.description,
+            price: product.price,
+            image: product.image,
+            category: category,
+            quantity: product.available_quantity,
+            seller: product.seller,
+          });
+        }
+
+        return productData;
+      };
+
+      getProductData(results)
+        .then((productData) => {
+          console.log(productData);
+          res.status(200).json(productData);
+        })
+        .catch((error) => {
+          console.error("Error fetching product data:", error);
+          res
+            .status(500)
+            .json({ message: "Error fetching products", error: error.message });
+        });
+    }
+  });
+};
+
+module.exports = {
+  registerCustomer,
+  getAllProducts,
+  getProduct,
+  getCategoryName,
+};
