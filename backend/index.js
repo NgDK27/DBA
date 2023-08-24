@@ -2,6 +2,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const session = require("express-session");
 const bodyParser = require("body-parser");
+const cors = require("cors");
 const dotenv = require("dotenv");
 dotenv.config();
 const db = require("./dbconnection");
@@ -13,6 +14,7 @@ const sellerRoute = require("./routes/seller");
 const app = express();
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.json());
+app.use(cors());
 app.use(
   session({ secret: "your_secret_key", resave: true, saveUninitialized: true })
 );
