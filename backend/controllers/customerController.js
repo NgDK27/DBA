@@ -41,7 +41,8 @@ const getCategoryName = async (categoryId) => {
 const getAllProducts = async (req, res) => {
   const { minPrice, maxPrice, search, sortField, sortOrder } = req.query;
 
-  let query = "SELECT * FROM product ";
+  let query =
+    "SELECT p.product_id, p.title, p.description, p.price, p.image, p.category_id, SUM(i.quantity) AS available_quantity, u.username AS seller FROM product p JOIN inventory i ON p.product_id = i.product_id JOIN users u ON p.seller_id = u.user_id";
   const queryParams = [];
 
   // Add conditions to the query dynamically
@@ -55,11 +56,13 @@ const getAllProducts = async (req, res) => {
     query += " WHERE price <= ?";
     queryParams.push(parseInt(maxPrice));
   }
-  console.log(query);
 
   if (search) {
     query += " WHERE (title LIKE ? OR description LIKE ?)";
     queryParams.push(`%${search}%`, `%${search}%`);
+    query += " GROUP BY p.product_id, p.title, p.description, p.price, p.image";
+  } else {
+    query += " GROUP BY p.product_id, p.title, p.description, p.price, p.image";
   }
 
   // Add ORDER BY clause for sorting
@@ -85,7 +88,8 @@ const getAllProducts = async (req, res) => {
             price: product.price,
             image: product.image,
             category: category,
-            added_time: product.added_time,
+            quantity: product.available_quantity,
+            seller: product.seller,
           });
         }
 
