@@ -30,7 +30,7 @@ put: /admins/warehouses/:id
 
 delete: /admins/warehouses/:id (only with no products) (name)
 
-post: admins/moveProducts (not complete)
+post: admins/moveProducts
 
 seller:
 

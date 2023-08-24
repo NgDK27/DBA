@@ -170,6 +170,8 @@ const deleteProduct = (req, res) => {
   );
 };
 
+
+
 module.exports = {
   registerSeller,
   createProduct,
