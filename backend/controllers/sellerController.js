@@ -259,6 +259,26 @@ const deleteProduct = (req, res) => {
   );
 };
 
+const sendInboundOrder = async (req, res) => {
+  const { productId, quantity } = req.body;
+
+  await db.mysqlConnection.query(
+    "CALL SendProductToWarehouse(?, ?)",
+    [productId, quantity],
+    (error, result) => {
+      if (error) {
+        console.error(error);
+        res.status(500).json({
+          message: "Error sending inbound order",
+          error: error.message,
+        });
+      } else {
+        res.status(200).json({ message: "Send inbound order successfully" });
+      }
+    }
+  );
+};
+
 module.exports = {
   registerSeller,
   createProduct,
@@ -266,4 +286,5 @@ module.exports = {
   deleteProduct,
   getAllProducts,
   getProduct,
+  sendInboundOrder,
 };

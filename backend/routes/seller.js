@@ -9,6 +9,7 @@ const {
   deleteProduct,
   getAllProducts,
   getProduct,
+  sendInboundOrder,
 } = require("../controllers/sellerController");
 const { checkRole } = require("../middlewares/role");
 const router = express.Router();
@@ -39,5 +40,6 @@ router.put("/products/:id", checkRole("seller"), updateProduct);
 router.delete("/products/:id", checkRole("seller"), deleteProduct);
 router.get("/getAllProducts", checkRole("seller"), getAllProducts);
 router.get("/getProduct/:id", checkRole("seller"), getProduct);
+router.post("/sendInbound", checkRole("seller"), sendInboundOrder);
 
 module.exports = router;

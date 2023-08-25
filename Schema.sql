@@ -72,6 +72,105 @@ END //
 DELIMITER ;
 
 
+DELIMITER //
+
+CREATE PROCEDURE SendProductToWarehouse(IN p_id INT, IN qnt INT)
+BEGIN
+  DECLARE total_quantity INT;
+  DECLARE product_area INT;
+  DECLARE remaining_quantity INT;
+  DECLARE combined_available_area INT; -- New variable
+
+  -- Calculate the total quantity of the product in stock
+  SELECT SUM(quantity) INTO total_quantity
+  FROM inventory
+  WHERE product_id = p_id;
+
+  -- Calculate the product's area for the chosen product
+  SELECT (length * width * height) INTO product_area
+  FROM product
+  WHERE product_id = p_id;
+
+  -- Calculate the combined available area in all warehouses
+  SELECT SUM(total_area_volume) INTO combined_available_area
+  FROM warehouse;
+
+  -- Compare the total combined available area with the total volume of the products
+  IF combined_available_area < (product_area * qnt) THEN
+    -- Handle the case where there's not enough space in all warehouses
+    SIGNAL SQLSTATE '45000'
+    SET MESSAGE_TEXT = 'Not enough space in warehouses to stock all products';
+  ELSE
+    -- Continue with the rest of the logic to send products to warehouses
+    SET remaining_quantity = qnt;
+
+    -- Loop through warehouses while remaining_quantity > 0
+    WHILE remaining_quantity > 0 DO
+      -- Find the warehouse with the largest available space
+      SELECT warehouse_id
+      INTO @target_warehouse
+      FROM warehouse
+      ORDER BY total_area_volume DESC
+      LIMIT 1;
+
+      -- Calculate available space in the selected warehouse
+      SELECT total_area_volume INTO @available_space_selected
+      FROM warehouse
+      WHERE warehouse_id = @target_warehouse;
+
+      -- If enough space, update inventory
+      IF @available_space_selected >= (remaining_quantity * product_area) THEN
+        -- Update or insert into inventory
+        IF EXISTS (SELECT 1 FROM inventory WHERE product_id = p_id AND warehouse_id = @target_warehouse) THEN
+          UPDATE inventory
+          SET quantity = quantity + remaining_quantity
+          WHERE product_id = p_id AND warehouse_id = @target_warehouse;
+          
+          UPDATE warehouse
+          SET total_area_volume = total_area_volume - (remaining_quantity * product_area)
+          WHERE warehouse_id = @target_warehouse;
+          
+        ELSE
+          INSERT INTO inventory (product_id, warehouse_id, quantity)
+          VALUES (p_id, @target_warehouse, remaining_quantity);
+          
+          UPDATE warehouse
+          SET total_area_volume = total_area_volume - (remaining_quantity * product_area)
+          WHERE warehouse_id = @target_warehouse;
+          
+        END IF;
+        -- Update remaining quantity and exit loop
+        SET remaining_quantity = 0;
+      ELSE
+        -- Update available space in the warehouse
+        
+        IF EXISTS (SELECT 1 FROM inventory WHERE product_id = p_id AND warehouse_id = @target_warehouse) THEN
+
+          UPDATE inventory
+          SET quantity = quantity + (@available_space_selected / product_area)
+          WHERE product_id = p_id AND warehouse_id = @target_warehouse;
+          
+        ELSE
+          INSERT INTO inventory (product_id, warehouse_id, quantity)
+          VALUES (p_id, @target_warehouse, (@available_space_selected / product_area));
+          
+        END IF;
+
+        UPDATE warehouse
+        SET total_area_volume = 0
+        WHERE warehouse_id = @target_warehouse;
+
+        SET remaining_quantity = remaining_quantity - @available_space_selected / product_area;
+        
+      END IF;
+      
+    END WHILE;
+  END IF;
+END //
+
+DELIMITER ;
+
+
 
 
 
