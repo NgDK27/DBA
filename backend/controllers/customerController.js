@@ -156,9 +156,46 @@ const getProduct = async (req, res) => {
   });
 };
 
+function checkInvenQuantity(productId) {
+  const query = "SELECT SUM(quantity) FROM inventory WHERE product_id = ?";
+  const results = new Promise((resolve, reject) => {
+    db.mysqlConnection.query(query, productId, (error, results) => {
+      if (error) {
+        console.error("error: " + error.stack);
+        reject(error);
+        return;
+      }
+      resolve(results);
+    });
+  });
+  return results;
+}
+
+const addCart = async (req, res) => {
+  const { productId, quantity } = req.body;
+  const totalQuantity = await checkInvenQuantity(productId);
+  if (quantity > totalQuantity) {
+    res.status(500).json({ message: "Not enough product in stock" });
+  } else {
+  }
+};
+
 module.exports = {
   registerCustomer,
   getAllProducts,
   getProduct,
   getCategoryName,
+  addCart,
 };
+
+// const results = await new Promise((resolve, reject) => {
+//   db.mysqlConnection.query(`SELECT * FROM warehouse`, (err, results) => {
+//     if (err) {
+//       console.error("error: " + err.stack);
+//       reject(err);
+//       return;
+//     }
+//     resolve(results);
+//   });
+// });
+// return res.json(results);

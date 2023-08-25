@@ -6,6 +6,7 @@ const mysqlConnection = mysql.createPool({
   user: "root",
   password: "password",
   database: "dba",
+  connectionLimit: 10,
 });
 
 module.exports = { mysqlConnection };

@@ -112,7 +112,7 @@ const deleteCategory = async (req, res) => {
 
 const createWarehouse = async (req, res) => {
   try {
-    var data = {
+    const data = {
       name: req.body.name,
       province: req.body.province,
       city: req.body.city,
@@ -120,6 +120,7 @@ const createWarehouse = async (req, res) => {
       street: req.body.street,
       number: req.body.number,
       total_area_volume: req.body.area,
+      available_area: req.body.area,
     };
     console.log(data);
     let result = await db.mysqlConnection.query(
@@ -234,7 +235,7 @@ const deleteWarehouse = async (req, res) => {
 
 const getAllWarehouses = async (req, res) => {
   const query =
-    "SELECT i.warehouse_id, SUM(i.quantity) AS total_quantity, w.total_area_volume as available_area FROM inventory i JOIN warehouse w ON w.warehouse_id = i.warehouse_id JOIN product p ON i.product_id = p.product_id GROUP BY i.warehouse_id";
+    "SELECT w.warehouse_id, SUM(i.quantity) AS total_quantity, w.available_area FROM warehouse w LEFT JOIN inventory i ON w.warehouse_id = i.warehouse_id LEFT JOIN product p ON i.product_id = p.product_id GROUP BY i.warehouse_id";
   db.mysqlConnection.query(query, (error, result) => {
     if (error) {
       res
@@ -249,9 +250,9 @@ const getAllWarehouses = async (req, res) => {
 const getWarehouse = async (req, res) => {
   const warehouseId = req.params.id;
   const query =
-    "SELECT p.product_id, SUM(i.quantity) AS total_quantity, (SUM(i.quantity) * (p.length* p.width* p.height)) as occupied_area FROM inventory i JOIN warehouse w ON w.warehouse_id = i.warehouse_id JOIN product p ON i.product_id = p.product_id WHERE i.warehouse_id = ? GROUP BY i.warehouse_id, p.product_id";
+    "SELECT p.product_id, SUM(i.quantity) AS total_quantity, (w.total_area_volume - w.available_area) as occupied_area FROM inventory i JOIN warehouse w ON w.warehouse_id = i.warehouse_id JOIN product p ON i.product_id = p.product_id WHERE i.warehouse_id = ? GROUP BY i.warehouse_id, p.product_id";
   const avalableArea =
-    "SELECT w.total_area_volume FROM warehouse w WHERE w.warehouse_id = ?";
+    "SELECT w.available FROM warehouse w WHERE w.warehouse_id = ?";
   Promise.all([
     new Promise((resolve, reject) => {
       db.mysqlConnection.query(query, warehouseId, (err, results) => {
@@ -278,14 +279,16 @@ const getWarehouse = async (req, res) => {
 const moveProducts = async (req, res) => {
   const { sourceWarehouseId, destinationWarehouseId, productId, quantity } =
     req.body;
-  const queryAsync = util
-    .promisify(db.mysqlConnection.query)
-    .bind(db.mysqlConnection);
+
   try {
-    db.mysqlConnection.beginTransaction();
+    const connection = await util
+      .promisify(db.mysqlConnection.getConnection)
+      .call(db.mysqlConnection);
+    await util.promisify(connection.beginTransaction).call(connection);
+
+    const queryAsync = util.promisify(connection.query).bind(connection);
 
     // Step 1: Update source warehouse inventory
-
     await queryAsync(
       "UPDATE inventory SET quantity = quantity - ? WHERE warehouse_id = ? AND product_id = ?",
       [quantity, sourceWarehouseId, productId]
@@ -308,9 +311,6 @@ const moveProducts = async (req, res) => {
         [productId, destinationWarehouseId, quantity]
       );
     }
-
-    // Step 3: Update warehouse areas
-
     async function getAreaResult(productId) {
       const areaQuery =
         "SELECT (p.length * p.width * p.height) as area FROM product p WHERE p.product_id = ?";
@@ -336,28 +336,39 @@ const moveProducts = async (req, res) => {
 
       await Promise.all([
         queryAsync(
-          "UPDATE warehouse SET total_area_volume = total_area_volume - ? WHERE warehouse_id = ?",
+          "UPDATE warehouse SET available_area = available_area - ? WHERE warehouse_id = ?",
           [requiredArea, sourceWarehouseId]
         ),
         queryAsync(
-          "UPDATE warehouse SET total_area_volume = total_area_volume + ? WHERE warehouse_id = ?",
+          "UPDATE warehouse SET available_area = avalable_area + ? WHERE warehouse_id = ?",
           [requiredArea, destinationWarehouseId]
         ),
       ]);
     })();
 
-    // Step 4: Commit the transaction
+    // ... continue with the rest of the steps
 
-    db.mysqlConnection.commit();
+    // Commit the transaction
+    await util.promisify(connection.commit).call(connection);
 
-    await res.json({ message: "Products moved between warehouses." });
+    // Release the connection
+    connection.release();
+
+    res.json({ message: "Products moved between warehouses." });
   } catch (error) {
-    // Rollback the transaction in case of an error
-    db.mysqlConnection.rollback();
     console.error("Error:", error);
-    await res.status(500).json({ message: "An error occurred." });
+
+    // Rollback the transaction and release the connection in case of an error
+    if (connection) {
+      await util.promisify(connection.rollback).call(connection);
+      connection.release();
+    }
+
+    res.status(500).json({ message: "An error occurred." });
   }
 };
+
+module.exports = { moveProducts };
 
 const createInventory = async (req, res) => {
   try {

@@ -31,7 +31,8 @@ CREATE TABLE warehouse (
   district VARCHAR(255) NOT NULL,
   street VARCHAR(255) NOT NULL,
   number INT NOT NULL,
-  total_area_volume INT NOT NULL
+  total_area_volume INT NOT NULL,
+  available_area INT NOT NULL
 );
 
 CREATE TABLE inventory (
@@ -81,7 +82,7 @@ BEGIN
   WHERE product_id = p_id;
 
   -- Calculate the combined available area in all warehouses
-  SELECT SUM(total_area_volume) INTO combined_available_area
+  SELECT SUM(available_area) INTO combined_available_area
   FROM warehouse;
 
   -- Compare the total combined available area with the total volume of the products
@@ -99,11 +100,11 @@ BEGIN
       SELECT warehouse_id
       INTO @target_warehouse
       FROM warehouse
-      ORDER BY total_area_volume DESC
+      ORDER BY available_area DESC
       LIMIT 1;
 
       -- Calculate available space in the selected warehouse
-      SELECT total_area_volume INTO @available_space_selected
+      SELECT available_area INTO @available_space_selected
       FROM warehouse
       WHERE warehouse_id = @target_warehouse;
 
@@ -116,7 +117,7 @@ BEGIN
           WHERE product_id = p_id AND warehouse_id = @target_warehouse;
           
           UPDATE warehouse
-          SET total_area_volume = total_area_volume - (remaining_quantity * product_area)
+          SET available_area = available_area - (remaining_quantity * product_area)
           WHERE warehouse_id = @target_warehouse;
           
         ELSE
@@ -124,7 +125,7 @@ BEGIN
           VALUES (p_id, @target_warehouse, remaining_quantity);
           
           UPDATE warehouse
-          SET total_area_volume = total_area_volume - (remaining_quantity * product_area)
+          SET available_area = available_area - (remaining_quantity * product_area)
           WHERE warehouse_id = @target_warehouse;
           
         END IF;
@@ -136,20 +137,20 @@ BEGIN
         IF EXISTS (SELECT 1 FROM inventory WHERE product_id = p_id AND warehouse_id = @target_warehouse) THEN
 
           UPDATE inventory
-          SET quantity = quantity + (@available_space_selected / product_area)
+          SET quantity = quantity + FLOOR(@available_space_selected / product_area)
           WHERE product_id = p_id AND warehouse_id = @target_warehouse;
           
         ELSE
           INSERT INTO inventory (product_id, warehouse_id, quantity)
-          VALUES (p_id, @target_warehouse, (@available_space_selected / product_area));
+          VALUES (p_id, @target_warehouse, FLOOR(@available_space_selected / product_area));
           
         END IF;
 
         UPDATE warehouse
-        SET total_area_volume = 0
+        SET available_area = available_area - - (product_area * FLOOR(@available_space_selected / product_area))
         WHERE warehouse_id = @target_warehouse;
 
-        SET remaining_quantity = remaining_quantity - @available_space_selected / product_area;
+        SET remaining_quantity = remaining_quantity - FLOOR(@available_space_selected / product_area);
         
       END IF;
       
