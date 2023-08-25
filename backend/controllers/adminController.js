@@ -288,29 +288,6 @@ const moveProducts = async (req, res) => {
 
     const queryAsync = util.promisify(connection.query).bind(connection);
 
-    // Step 1: Update source warehouse inventory
-    await queryAsync(
-      "UPDATE inventory SET quantity = quantity - ? WHERE warehouse_id = ? AND product_id = ?",
-      [quantity, sourceWarehouseId, productId]
-    );
-
-    // Step 2: Update destination warehouse inventory
-    const existingInventoryRow = await queryAsync(
-      "SELECT quantity FROM inventory WHERE warehouse_id = ? AND product_id = ?",
-      [destinationWarehouseId, productId]
-    );
-
-    if (existingInventoryRow.length > 0) {
-      await queryAsync(
-        "UPDATE inventory SET quantity = quantity + ? WHERE warehouse_id = ? AND product_id = ?",
-        [quantity, destinationWarehouseId, productId]
-      );
-    } else {
-      await queryAsync(
-        "INSERT INTO inventory (product_id, warehouse_id, quantity) VALUES (?, ?, ?)",
-        [productId, destinationWarehouseId, quantity]
-      );
-    }
     async function getAreaResult(productId) {
       const areaQuery =
         "SELECT (p.length * p.width * p.height) as area FROM product p WHERE p.product_id = ?";
@@ -332,29 +309,64 @@ const moveProducts = async (req, res) => {
       const productArea = await getAreaResult(productId);
       const requiredArea = productArea * quantity;
 
-      // Next part
+      const destinationAvailableArea = await queryAsync(
+        "SELECT available_area FROM warehouse WHERE warehouse_id = ?",
+        destinationWarehouseId
+      );
 
-      await Promise.all([
-        queryAsync(
-          "UPDATE warehouse SET available_area = available_area - ? WHERE warehouse_id = ?",
-          [requiredArea, sourceWarehouseId]
-        ),
-        queryAsync(
-          "UPDATE warehouse SET available_area = avalable_area + ? WHERE warehouse_id = ?",
-          [requiredArea, destinationWarehouseId]
-        ),
-      ]);
+      if (
+        requiredArea >
+        JSON.parse(JSON.stringify(destinationAvailableArea))[0].available_area
+      ) {
+        await util.promisify(connection.rollback).call(connection);
+        connection.release();
+        res.status(500).json({ message: "Not enough space" });
+      } else {
+        // Step 1: Update source warehouse inventory
+        await queryAsync(
+          "UPDATE inventory SET quantity = quantity - ? WHERE warehouse_id = ? AND product_id = ?",
+          [quantity, sourceWarehouseId, productId]
+        );
+
+        // Step 2: Update destination warehouse inventory
+        const existingInventoryRow = await queryAsync(
+          "SELECT quantity FROM inventory WHERE warehouse_id = ? AND product_id = ?",
+          [destinationWarehouseId, productId]
+        );
+
+        if (existingInventoryRow.length > 0) {
+          await queryAsync(
+            "UPDATE inventory SET quantity = quantity + ? WHERE warehouse_id = ? AND product_id = ?",
+            [quantity, destinationWarehouseId, productId]
+          );
+        } else {
+          await queryAsync(
+            "INSERT INTO inventory (product_id, warehouse_id, quantity) VALUES (?, ?, ?)",
+            [productId, destinationWarehouseId, quantity]
+          );
+        }
+
+        // Next part
+
+        await Promise.all([
+          queryAsync(
+            "UPDATE warehouse SET available_area = available_area + ? WHERE warehouse_id = ?",
+            [requiredArea, sourceWarehouseId]
+          ),
+          queryAsync(
+            "UPDATE warehouse SET available_area = available_area - ? WHERE warehouse_id = ?",
+            [requiredArea, destinationWarehouseId]
+          ),
+        ]);
+        // Commit the transaction
+        await util.promisify(connection.commit).call(connection);
+
+        // Release the connection
+        connection.release();
+
+        res.json({ message: "Products moved between warehouses." });
+      }
     })();
-
-    // ... continue with the rest of the steps
-
-    // Commit the transaction
-    await util.promisify(connection.commit).call(connection);
-
-    // Release the connection
-    connection.release();
-
-    res.json({ message: "Products moved between warehouses." });
   } catch (error) {
     console.error("Error:", error);
 
@@ -367,8 +379,6 @@ const moveProducts = async (req, res) => {
     res.status(500).json({ message: "An error occurred." });
   }
 };
-
-module.exports = { moveProducts };
 
 const createInventory = async (req, res) => {
   try {
