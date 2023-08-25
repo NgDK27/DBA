@@ -60,17 +60,6 @@ CREATE TABLE orderItem (
   FOREIGN KEY (product_id) REFERENCES product(product_id)
 );
 
-DELIMITER //
-CREATE PROCEDURE SelectWarehouseByArea(IN required_area INT, OUT warehouse_id INT)
-BEGIN
-    SELECT warehouse_id INTO warehouse_id
-    FROM warehouse
-    WHERE total_area_volume >= required_area
-    ORDER BY total_area_volume DESC
-    LIMIT 1;
-END //
-DELIMITER ;
-
 
 DELIMITER //
 

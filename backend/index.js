@@ -31,11 +31,12 @@ app.use(
   })
 );
 
-db.mysqlConnection.connect((err) => {
-  if (err) {
-    console.log(err);
+db.mysqlConnection.getConnection((error, connection) => {
+  if (error) {
+    console.error("Error connecting to MySQL:", error);
   } else {
-    console.log("MySQL connected");
+    console.log("Connected to MySQL database");
+    connection.release(); // Release the connection back to the pool
   }
 });
 
@@ -62,7 +63,7 @@ mongoose
   .connect(process.env.MONGO_URL)
   .then(() => {
     app.listen(5000, () => {
-      console.log(`mongodb running`);
+      console.log(`MongoDB is running`);
     });
   })
   .catch((err) => console.log(err));

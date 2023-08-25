@@ -42,7 +42,7 @@ const getAllProducts = async (req, res) => {
   const { minPrice, maxPrice, search, sortField, sortOrder } = req.query;
 
   let query =
-    "SELECT p.product_id, p.title, p.description, p.price, p.image, p.category_id, SUM(i.quantity) AS available_quantity, u.username AS seller FROM product p JOIN inventory i ON p.product_id = i.product_id JOIN users u ON p.seller_id = u.user_id";
+    "SELECT p.product_id, p.title, p.description, p.price, p.image, p.category_id, SUM(i.quantity) AS available_quantity, u.username AS seller FROM product p LEFT JOIN inventory i ON p.product_id = i.product_id JOIN users u ON p.seller_id = u.user_id";
   const queryParams = [];
 
   // Add conditions to the query dynamically
@@ -88,7 +88,7 @@ const getAllProducts = async (req, res) => {
             price: product.price,
             image: product.image,
             category: category,
-            quantity: product.available_quantity,
+            quantity: product.available_quantity || 0,
             seller: product.seller,
           });
         }
@@ -114,7 +114,7 @@ const getAllProducts = async (req, res) => {
 const getProduct = async (req, res) => {
   const productId = req.params.id;
   const query =
-    "SELECT p.product_id, p.title, p.description, p.price, p.image, p.category_id, SUM(i.quantity) AS available_quantity, u.username AS seller FROM product p JOIN inventory i ON p.product_id = i.product_id JOIN users u ON p.seller_id = u.user_id WHERE p.product_id = ? GROUP BY p.product_id, p.title, p.description, p.price, p.image";
+    "SELECT p.product_id, p.title, p.description, p.price, p.image, p.category_id, SUM(i.quantity) AS available_quantity, u.username AS seller FROM product p LEFT JOIN inventory i ON p.product_id = i.product_id JOIN users u ON p.seller_id = u.user_id WHERE p.product_id = ? GROUP BY p.product_id, p.title, p.description, p.price, p.image";
   db.mysqlConnection.query(query, productId, (error, results) => {
     if (error) {
       return res
@@ -133,7 +133,7 @@ const getProduct = async (req, res) => {
             price: product.price,
             image: product.image,
             category: category,
-            quantity: product.available_quantity,
+            quantity: product.available_quantity || 0,
             seller: product.seller,
           });
         }

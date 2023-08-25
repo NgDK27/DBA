@@ -48,6 +48,8 @@ get: /getAllProducts
 
 get: /getProduct/:id
 
+post: /sendInbound
+
 Category in mongodb: {
 
     {"_id":{"$oid":"64e32957735672ab7fd0a678"},"id":{"$numberInt":"1"},"name":"Clothes","__v":{"$numberInt":"0"}},
