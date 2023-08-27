@@ -31,11 +31,12 @@ app.use(
   })
 );
 
-db.mysqlConnection.connect((err) => {
-  if (err) {
-    console.log(err);
+db.mysqlConnection.getConnection((error, connection) => {
+  if (error) {
+    console.error("Error connecting to MySQL:", error);
   } else {
-    console.log("MySQL connected");
+    console.log("Connected to MySQL database");
+    connection.release(); // Release the connection back to the pool
   }
 });
 
@@ -47,16 +48,6 @@ app.use((req, res, next) => {
     return res.redirect(301, httpsUrl);
   }
   next();
-});
-
-// Set up HTTPS server
-const options = {
-  key: fs.readFileSync("./security/private.key"),
-  cert: fs.readFileSync("./security/certificate.crt"),
-};
-
-https.createServer(options, app).listen(443, () => {
-  console.log("Server running on port 443 (HTTPS)");
 });
 
 app.get("/", (req, res) => {
@@ -72,7 +63,17 @@ mongoose
   .connect(process.env.MONGO_URL)
   .then(() => {
     app.listen(5000, () => {
-      console.log(`mongodb running`);
+      console.log(`MongoDB is running`);
     });
   })
   .catch((err) => console.log(err));
+
+// Set up HTTPS server
+const options = {
+  key: fs.readFileSync("./security/private.key", "utf-8"),
+  cert: fs.readFileSync("./security/certificate.crt", "utf8"),
+};
+
+https.createServer(options, app).listen(443, () => {
+  console.log("Server running on port 443 (HTTPS)");
+});

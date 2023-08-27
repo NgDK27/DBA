@@ -42,7 +42,7 @@ const getAllProducts = async (req, res) => {
   const { minPrice, maxPrice, search, sortField, sortOrder } = req.query;
 
   let query =
-    "SELECT p.product_id, p.title, p.description, p.price, p.image, p.category_id, SUM(i.quantity) AS available_quantity, u.username AS seller FROM product p JOIN inventory i ON p.product_id = i.product_id JOIN users u ON p.seller_id = u.user_id";
+    "SELECT p.product_id, p.title, p.description, p.price, p.image, p.category_id, SUM(i.quantity) AS available_quantity, u.username AS seller FROM product p LEFT JOIN inventory i ON p.product_id = i.product_id JOIN users u ON p.seller_id = u.user_id";
   const queryParams = [];
 
   // Add conditions to the query dynamically
@@ -88,7 +88,7 @@ const getAllProducts = async (req, res) => {
             price: product.price,
             image: product.image,
             category: category,
-            quantity: product.available_quantity,
+            quantity: product.available_quantity || 0,
             seller: product.seller,
           });
         }
@@ -111,4 +111,91 @@ const getAllProducts = async (req, res) => {
   });
 };
 
-module.exports = { registerCustomer, getAllProducts, getCategoryName };
+const getProduct = async (req, res) => {
+  const productId = req.params.id;
+  const query =
+    "SELECT p.product_id, p.title, p.description, p.price, p.image, p.category_id, SUM(i.quantity) AS available_quantity, u.username AS seller FROM product p LEFT JOIN inventory i ON p.product_id = i.product_id JOIN users u ON p.seller_id = u.user_id WHERE p.product_id = ? GROUP BY p.product_id, p.title, p.description, p.price, p.image";
+  db.mysqlConnection.query(query, productId, (error, results) => {
+    if (error) {
+      return res
+        .status(500)
+        .json({ message: "Error deleting category", error: error.message });
+    } else {
+      const getProductData = async (results) => {
+        const productData = [];
+
+        for (const product of results) {
+          const category = await getCategoryName(product.category_id);
+          productData.push({
+            product_id: product.product_id,
+            title: product.title,
+            description: product.description,
+            price: product.price,
+            image: product.image,
+            category: category,
+            quantity: product.available_quantity || 0,
+            seller: product.seller,
+          });
+        }
+
+        return productData;
+      };
+
+      getProductData(results)
+        .then((productData) => {
+          console.log(productData);
+          res.status(200).json(productData);
+        })
+        .catch((error) => {
+          console.error("Error fetching product data:", error);
+          res
+            .status(500)
+            .json({ message: "Error fetching products", error: error.message });
+        });
+    }
+  });
+};
+
+function checkInvenQuantity(productId) {
+  const query = "SELECT SUM(quantity) FROM inventory WHERE product_id = ?";
+  const results = new Promise((resolve, reject) => {
+    db.mysqlConnection.query(query, productId, (error, results) => {
+      if (error) {
+        console.error("error: " + error.stack);
+        reject(error);
+        return;
+      }
+      resolve(results);
+    });
+  });
+  return results;
+}
+
+const addCart = async (req, res) => {
+  const { productId, quantity } = req.body;
+  const totalQuantity = await checkInvenQuantity(productId);
+  if (quantity > totalQuantity) {
+    res.status(500).json({ message: "Not enough product in stock" });
+  } else {
+  }
+};
+
+module.exports = {
+  registerCustomer,
+  getAllProducts,
+  getProduct,
+  getCategoryName,
+  addCart,
+};
+
+// const results = await new Promise((resolve, reject) => {
+//   db.mysqlConnection.query(`SELECT * FROM warehouse`, (err, results) => {
+//     if (err) {
+//       console.error("error: " + err.stack);
+//       reject(err);
+//       return;
+//     }
+//     resolve(results);
+//   });
+// });
+// return res.json(results);

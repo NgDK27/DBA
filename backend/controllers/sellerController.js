@@ -3,6 +3,7 @@ const path = require("path");
 const db = require("../dbconnection");
 const bcrypt = require("bcrypt");
 const moment = require("moment");
+const { getCategoryName } = require("./customerController");
 
 const registerSeller = async (req, res) => {
   const { username, email, password } = req.body;
@@ -59,6 +60,100 @@ const createProduct = async (req, res) => {
       }
     );
   } catch (error) {}
+};
+
+const getAllProducts = async (req, res) => {
+  const sellerId = req.session.userid;
+  console.log(sellerId);
+  const query =
+    "SELECT p.product_id, p.title, p.description, p.price, p.image, p.category_id FROM product p WHERE p.seller_id = ?";
+  db.mysqlConnection.query(query, sellerId, (error, results) => {
+    console.log(query);
+    if (error) {
+      return res
+        .status(500)
+        .json({ message: "Error deleting category", error: error.message });
+    } else {
+      const getProductData = async (results) => {
+        const productData = [];
+
+        for (const product of results) {
+          const category = await getCategoryName(product.category_id);
+          productData.push({
+            product_id: product.product_id,
+            title: product.title,
+            description: product.description,
+            price: product.price,
+            image: product.image,
+            category: category,
+          });
+        }
+
+        return productData;
+      };
+
+      getProductData(results)
+        .then((productData) => {
+          console.log(productData);
+          res.status(200).json(productData);
+        })
+        .catch((error) => {
+          console.error("Error fetching product data:", error);
+          res
+            .status(500)
+            .json({ message: "Error fetching products", error: error.message });
+        });
+    }
+  });
+};
+
+const getProduct = async (req, res) => {
+  const productId = req.params.id;
+  const query =
+    "SELECT p.product_id, p.title, p.description, p.price, p.image, p.category_id, SUM(i.quantity) AS available_quantity, u.username AS seller FROM product p LEFT JOIN inventory i ON p.product_id = i.product_id JOIN users u ON p.seller_id = u.user_id WHERE p.product_id = ? AND seller_id = ? GROUP BY p.product_id, p.title, p.description, p.price, p.image";
+  db.mysqlConnection.query(
+    query,
+    [productId, req.session.userid],
+    (error, results) => {
+      if (error) {
+        return res
+          .status(500)
+          .json({ message: "Error deleting category", error: error.message });
+      } else {
+        const getProductData = async (results) => {
+          const productData = [];
+
+          for (const product of results) {
+            const category = await getCategoryName(product.category_id);
+            productData.push({
+              product_id: product.product_id,
+              title: product.title,
+              description: product.description,
+              price: product.price,
+              image: product.image,
+              category: category,
+              quantity: product.available_quantity || 0,
+            });
+          }
+
+          return productData;
+        };
+
+        getProductData(results)
+          .then((productData) => {
+            console.log(productData);
+            res.status(200).json(productData);
+          })
+          .catch((error) => {
+            console.error("Error fetching product data:", error);
+            res.status(500).json({
+              message: "Error fetching products",
+              error: error.message,
+            });
+          });
+      }
+    }
+  );
 };
 
 const updateProduct = (req, res) => {
@@ -169,9 +264,32 @@ const deleteProduct = (req, res) => {
   );
 };
 
+const sendInboundOrder = async (req, res) => {
+  const { productId, quantity } = req.body;
+
+  await db.mysqlConnection.query(
+    "CALL SendProductToWarehouse(?, ?)",
+    [productId, quantity],
+    (error, result) => {
+      if (error) {
+        console.error(error);
+        res.status(500).json({
+          message: "Error sending inbound order",
+          error: error.message,
+        });
+      } else {
+        res.status(200).json({ message: "Send inbound order successfully" });
+      }
+    }
+  );
+};
+
 module.exports = {
   registerSeller,
   createProduct,
   updateProduct,
   deleteProduct,
+  getAllProducts,
+  getProduct,
+  sendInboundOrder,
 };
