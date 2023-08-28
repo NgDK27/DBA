@@ -1,5 +1,7 @@
 const express = require("express");
 const db = require("../dbconnection");
+const moment = require("moment");
+const util = require("util");
 const bcrypt = require("bcrypt");
 const Category = require("../models/category");
 
@@ -216,10 +218,97 @@ const addCart = async (req, res) => {
   console.log(global.cart);
 };
 
+const placeOrder = async (req, res) => {
+  const customerId = req.session.id;
+  try {
+    const connection = await util
+      .promisify(db.mysqlConnection.getConnection)
+      .call(db.mysqlConnection);
+    await util.promisify(connection.beginTransaction).call(connection);
+
+    const queryAsync = util.promisify(connection.query).bind(connection);
+
+    // Begin a transaction
+
+    const eligibleProducts = [];
+    const ineligibleProducts = [];
+
+    for (const cartItem of global.cart) {
+      const { productId, quantity } = cartItem;
+
+      const availableQuantityResult = await checkInvenQuantity(productId);
+
+      const availableQuantity = JSON.parse(
+        JSON.stringify(availableQuantityResult)
+      )[0].quantity;
+
+      if (availableQuantity >= quantity) {
+        // Product is eligible for the order
+        eligibleProducts.push({ productId, quantity });
+      } else {
+        // Product is ineligible due to insufficient quantity
+        ineligibleProducts.push({ productId, quantity, availableQuantity });
+      }
+    }
+
+    const added_time = moment().format("YYYY-MM-DD HH:mm:ss");
+    console.log(added_time);
+
+    await queryAsync(
+      "INSERT INTO order (customer_id, order_date, status) VALUES (?, ?, ?)",
+      [customerId, added_time, "Pending"]
+    );
+
+    const orderIdResult = await queryAsync(
+      "SELECT LAST_INSERT_ID() as order_id"
+    );
+    const orderId = JSON.parse(JSON.stringify(orderIdResult))[0].order_id;
+    console.log(orderId);
+
+    for (const cartItem of eligibleProducts) {
+      const { productId, quantity } = cartItem;
+      console.log(cartItem);
+
+      await queryAsync(
+        "INSERT INTO orderItem (order_id, product_id, quantity) VALUES (?, ?, ?)",
+        [orderId, productId, quantity]
+      );
+
+      // Update inventory quantity
+      await queryAsync("CALL UpdateInventory(?, ?)", [productId, quantity]);
+    }
+
+    await util.promisify(connection.commit).call(connection);
+    connection.release(); // Release the connection back to the pool
+
+    // Clear the cart
+    global.cart = [];
+
+    const response = {
+      message: "Order placed successfully",
+      eligibleProducts,
+      ineligibleProducts,
+    };
+
+    res.json(response);
+  } catch (error) {
+    console.error("Error:", error);
+
+    // Rollback the transaction and release the connection in case of an error
+    if (connection) {
+      await util.promisify(connection.rollback).call(connection);
+      connection.release();
+    }
+
+    res.status(500).json({ message: "An error occurred." });
+  }
+};
+
 module.exports = {
   registerCustomer,
   getAllProducts,
   getProduct,
   getCategoryName,
   addCart,
+  placeOrder,
 };

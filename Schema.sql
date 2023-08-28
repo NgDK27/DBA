@@ -1,4 +1,5 @@
 CREATE DATABASE dba;
+USE dba;
 
 CREATE TABLE users (
     user_id INT PRIMARY KEY AUTO_INCREMENT,
@@ -44,10 +45,10 @@ CREATE TABLE inventory (
   FOREIGN KEY (product_id) REFERENCES product(product_id)
 );
 
-CREATE TABLE order (
+CREATE TABLE orders (
   order_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
   customer_id INT NOT NULL,
-  order_date DATETIME INT NOT NULL,
+  order_date DATETIME NOT NULL,
   status enum("Accept","Pending","Reject") NOT NULL,
   FOREIGN KEY (customer_id) REFERENCES users(user_id)
 );
@@ -69,7 +70,7 @@ BEGIN
   DECLARE total_quantity INT;
   DECLARE product_area INT;
   DECLARE remaining_quantity INT;
-  DECLARE combined_available_area INT; -- New variable
+  DECLARE combined_available_area INT;
 
   -- Calculate the total quantity of the product in stock
   SELECT SUM(quantity) INTO total_quantity
@@ -158,6 +159,72 @@ BEGIN
   END IF;
 END //
 
+DELIMITER ;
+
+
+
+
+
+
+DELIMITER //
+
+CREATE PROCEDURE UpdateInventory(IN p_id INT, IN qnt INT)
+BEGIN
+  
+  DECLARE product_area INT;
+  DECLARE remaining_quantity INT;
+
+  SELECT (length * width * height) INTO product_area
+  FROM product
+  WHERE product_id = p_id;
+
+  SET remaining_quantity = qnt;
+
+  WHILE remaining_quantity > 0 DO
+     
+      SELECT warehouse_id
+      INTO @target_warehouse
+      FROM inventory
+      WHERE product_id = p_id
+      ORDER BY quantity DESC
+      LIMIT 1;
+
+      SELECT quantity
+      INTO @available_quantity
+      FROM inventory
+      WHERE product_id = p_id AND warehouse_id = @target_warehouse;
+    
+
+      IF @available_quantity > remaining_quantity THEN
+
+        UPDATE inventory
+        SET quantity = quantity - qnt
+        WHERE product_id = p_id AND warehouse_id = @target_warehouse;
+
+        UPDATE warehouse
+        SET available_area = available_area + (product_area * qnt)
+        WHERE warehouse_id = @target_warehouse;
+
+        SET remaining_quantity = 0;
+
+      ELSE 
+
+        UPDATE inventory
+        SET quantity = quantity - @available_quantity
+        WHERE product_id = p_id AND warehouse_id = @target_warehouse;
+
+        UPDATE warehouse
+        SET available_area = available_area + (product_area * @available_quantity)
+        WHERE warehouse_id = @target_warehouse;
+
+
+        SET remaining_quantity = remaining_quantity - @available_quantity;
+
+      END IF;
+
+  END WHILE;
+
+END //
 DELIMITER ;
 
 

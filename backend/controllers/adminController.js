@@ -1,6 +1,6 @@
 const express = require("express");
-const util = require("util");
 const db = require("../dbconnection");
+const util = require("util");
 const bcrypt = require("bcrypt");
 const Category = require("../models/category");
 const session = require("express-session");
