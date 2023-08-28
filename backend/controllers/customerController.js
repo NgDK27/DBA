@@ -157,7 +157,8 @@ const getProduct = async (req, res) => {
 };
 
 function checkInvenQuantity(productId) {
-  const query = "SELECT SUM(quantity) FROM inventory WHERE product_id = ?";
+  const query =
+    "SELECT SUM(quantity) AS quantity FROM inventory WHERE product_id = ?";
   const results = new Promise((resolve, reject) => {
     db.mysqlConnection.query(query, productId, (error, results) => {
       if (error) {
@@ -174,10 +175,45 @@ function checkInvenQuantity(productId) {
 const addCart = async (req, res) => {
   const { productId, quantity } = req.body;
   const totalQuantity = await checkInvenQuantity(productId);
-  if (quantity > totalQuantity) {
-    res.status(500).json({ message: "Not enough product in stock" });
+
+  if (
+    Number(quantity) > JSON.parse(JSON.stringify(totalQuantity))[0].quantity
+  ) {
+    res.status(400).json({ message: "Not enough product in stock" });
   } else {
+    if (!global.cart) {
+      global.cart = [];
+      // Add the product to the cart (in-memory representation)
+      global.cart.push({ productId, quantity });
+      res.json({ message: "Product added to cart" });
+    } else {
+      const existProduct = global.cart.find(
+        (obj) => obj.productId === productId
+      );
+      if (existProduct) {
+        const productToUpdate = global.cart.find(
+          (obj) => obj.productId === productId
+        );
+        const oldQuantity = parseInt(
+          global.cart.find((obj) => obj.productId === productId)?.quantity || 0
+        );
+
+        if (
+          oldQuantity + Number(quantity) >
+          JSON.parse(JSON.stringify(totalQuantity))[0].quantity
+        ) {
+          res.status(400).json({ message: "Not enough product in stock" });
+        } else {
+          productToUpdate.quantity = oldQuantity + Number(quantity);
+          res.json({ message: "Product added to cart" });
+        }
+      } else {
+        global.cart.push({ productId, quantity });
+        res.json({ message: "Product added to cart" });
+      }
+    }
   }
+  console.log(global.cart);
 };
 
 module.exports = {
@@ -187,15 +223,3 @@ module.exports = {
   getCategoryName,
   addCart,
 };
-
-// const results = await new Promise((resolve, reject) => {
-//   db.mysqlConnection.query(`SELECT * FROM warehouse`, (err, results) => {
-//     if (err) {
-//       console.error("error: " + err.stack);
-//       reject(err);
-//       return;
-//     }
-//     resolve(results);
-//   });
-// });
-// return res.json(results);

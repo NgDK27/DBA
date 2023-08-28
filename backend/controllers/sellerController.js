@@ -2,7 +2,6 @@ const express = require("express");
 const path = require("path");
 const db = require("../dbconnection");
 const bcrypt = require("bcrypt");
-const moment = require("moment");
 const { getCategoryName } = require("./customerController");
 
 const registerSeller = async (req, res) => {
