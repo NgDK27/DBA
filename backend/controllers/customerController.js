@@ -1,5 +1,7 @@
 const express = require("express");
 const db = require("../dbconnection");
+const moment = require("moment");
+const util = require("util");
 const bcrypt = require("bcrypt");
 const Category = require("../models/category");
 
@@ -157,7 +159,8 @@ const getProduct = async (req, res) => {
 };
 
 function checkInvenQuantity(productId) {
-  const query = "SELECT SUM(quantity) FROM inventory WHERE product_id = ?";
+  const query =
+    "SELECT SUM(quantity) AS quantity FROM inventory WHERE product_id = ?";
   const results = new Promise((resolve, reject) => {
     db.mysqlConnection.query(query, productId, (error, results) => {
       if (error) {
@@ -174,9 +177,176 @@ function checkInvenQuantity(productId) {
 const addCart = async (req, res) => {
   const { productId, quantity } = req.body;
   const totalQuantity = await checkInvenQuantity(productId);
-  if (quantity > totalQuantity) {
-    res.status(500).json({ message: "Not enough product in stock" });
+
+  if (
+    Number(quantity) > JSON.parse(JSON.stringify(totalQuantity))[0].quantity
+  ) {
+    res.status(400).json({ message: "Not enough product in stock" });
   } else {
+    if (!global.cart) {
+      global.cart = [];
+      // Add the product to the cart (in-memory representation)
+      global.cart.push({ productId, quantity });
+      res.json({ message: "Product added to cart" });
+    } else {
+      const existProduct = global.cart.find(
+        (obj) => obj.productId === productId
+      );
+      if (existProduct) {
+        const productToUpdate = global.cart.find(
+          (obj) => obj.productId === productId
+        );
+        const oldQuantity = parseInt(
+          global.cart.find((obj) => obj.productId === productId)?.quantity || 0
+        );
+
+        if (
+          oldQuantity + Number(quantity) >
+          JSON.parse(JSON.stringify(totalQuantity))[0].quantity
+        ) {
+          res.status(400).json({ message: "Not enough product in stock" });
+        } else {
+          productToUpdate.quantity = oldQuantity + Number(quantity);
+          res.json({ message: "Product added to cart" });
+        }
+      } else {
+        global.cart.push({ productId, quantity });
+        res.json({ message: "Product added to cart" });
+      }
+    }
+  }
+  console.log(global.cart);
+};
+
+const placeOrder = async (req, res) => {
+  const customerId = req.session.userid;
+  try {
+    const connection = await util
+      .promisify(db.mysqlConnection.getConnection)
+      .call(db.mysqlConnection);
+    await util.promisify(connection.beginTransaction).call(connection);
+
+    const queryAsync = util.promisify(connection.query).bind(connection);
+
+    // Begin a transaction
+
+    const eligibleProducts = [];
+    const ineligibleProducts = [];
+
+    for (const cartItem of global.cart) {
+      const { productId, quantity } = cartItem;
+
+      const availableQuantityResult = await checkInvenQuantity(productId);
+
+      const availableQuantity = JSON.parse(
+        JSON.stringify(availableQuantityResult)
+      )[0].quantity;
+
+      if (availableQuantity >= quantity) {
+        // Product is eligible for the order
+        eligibleProducts.push({ productId, quantity });
+      } else {
+        // Product is ineligible due to insufficient quantity
+        ineligibleProducts.push({ productId, quantity, availableQuantity });
+      }
+    }
+
+    const added_time = moment().format("YYYY-MM-DD HH:mm:ss");
+    console.log(added_time);
+
+    await queryAsync(
+      "INSERT INTO orders (customer_id, order_date, order_status) VALUES (?, ?, ?)",
+      [customerId, added_time, "Pending"]
+    );
+
+    const orderIdResult = await queryAsync(
+      "SELECT LAST_INSERT_ID() as order_id"
+    );
+    const orderId = JSON.parse(JSON.stringify(orderIdResult))[0].order_id;
+    console.log(orderId);
+
+    for (const cartItem of eligibleProducts) {
+      const { productId, quantity } = cartItem;
+      console.log(cartItem);
+
+      // Update inventory quantity
+      await queryAsync("CALL PlaceOrder(? , ?, ?)", [
+        orderId,
+        productId,
+        quantity,
+      ]);
+    }
+
+    await util.promisify(connection.commit).call(connection);
+    connection.release(); // Release the connection back to the pool
+
+    // Clear the cart
+    global.cart = [];
+
+    const response = {
+      message: "Order placed successfully",
+      eligibleProducts,
+      ineligibleProducts,
+    };
+
+    res.json(response);
+  } catch (error) {
+    console.error("Error:", error);
+
+    // Rollback the transaction and release the connection in case of an error
+    if (connection) {
+      await util.promisify(connection.rollback).call(connection);
+      connection.release();
+    }
+
+    res.status(500).json({ message: "An error occurred." });
+  }
+};
+
+const getAllOrders = async (req, res) => {
+  const customerId = req.session.userid;
+  const query = "SELECT * FROM orders WHERE customer_id = ?";
+  db.mysqlConnection.query(query, customerId, (error, result) => {
+    if (error) {
+      res
+        .status(500)
+        .json({ message: "Error fetching orders", error: error.message });
+    } else {
+      res.send(result);
+    }
+  });
+};
+
+const getOrder = async (req, res) => {
+  const orderId = req.params.id;
+  const customerId = req.session.userid;
+  console.log(customerId);
+  const query =
+    "SELECT oi.product_id, oi.quantity FROM orders o JOIN orderItem oi ON o.order_id = oi.order_id WHERE o.customer_id = ? AND o.order_id = ?";
+  db.mysqlConnection.query(query, [customerId, orderId], (error, result) => {
+    if (error) {
+      res.status(500).json({
+        message: `Error fetching order${orderId}`,
+        error: error.message,
+      });
+    } else {
+      res.send(result);
+    }
+  });
+};
+
+const updateStatus = async (req, res) => {
+  const orderId = req.params.id;
+  const { newStatus } = req.body;
+  try {
+    await db.mysqlConnection.query("CALL UpdateStatus(?, ?)", [
+      orderId,
+      newStatus,
+    ]);
+    res.status(200).json({ message: "Order updated successfully" });
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).json({ message: "An error occurred." });
   }
 };
 
@@ -185,17 +355,9 @@ module.exports = {
   getAllProducts,
   getProduct,
   getCategoryName,
+  getAllOrders,
+  getOrder,
   addCart,
+  placeOrder,
+  updateStatus,
 };
-
-// const results = await new Promise((resolve, reject) => {
-//   db.mysqlConnection.query(`SELECT * FROM warehouse`, (err, results) => {
-//     if (err) {
-//       console.error("error: " + err.stack);
-//       reject(err);
-//       return;
-//     }
-//     resolve(results);
-//   });
-// });
-// return res.json(results);
