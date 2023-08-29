@@ -187,6 +187,7 @@ BEGIN
   DECLARE product_area INT;
   DECLARE remaining_quantity INT;
 
+  -- Lock the inventory row for the specific product and warehouse
   SELECT (length * width * height) INTO product_area
   FROM product
   WHERE product_id = p_id;
@@ -195,50 +196,49 @@ BEGIN
 
   WHILE remaining_quantity > 0 DO
      
-      SELECT warehouse_id
-      INTO @target_warehouse
-      FROM inventory
-      WHERE product_id = p_id
-      ORDER BY quantity DESC
-      LIMIT 1;
+    SELECT warehouse_id
+    INTO @target_warehouse
+    FROM inventory
+    WHERE product_id = p_id
+    ORDER BY quantity DESC
+    LIMIT 1;
 
-      SELECT quantity
-      INTO @available_quantity
-      FROM inventory
+    -- Lock the inventory row for the specific product and warehouse
+    SELECT * FROM inventory WHERE product_id = p_id AND warehouse_id = @target_warehouse FOR UPDATE;
+
+    SELECT quantity
+    INTO @available_quantity
+    FROM inventory
+    WHERE product_id = p_id AND warehouse_id = @target_warehouse;
+
+    IF @available_quantity > remaining_quantity THEN
+      -- Update inventory and insert into orderItem
+      UPDATE inventory
+      SET quantity = quantity - remaining_quantity
       WHERE product_id = p_id AND warehouse_id = @target_warehouse;
-    
 
-      IF @available_quantity > remaining_quantity THEN
+      INSERT INTO orderItem (order_id, product_id, quantity, warehouse_id) VALUES (o_id, p_id, remaining_quantity, @target_warehouse);
 
-        SELECT * FROM inventory WHERE product_id = p_id AND warehouse_id = @target_warehouse FOR UPDATE;
+      SET remaining_quantity = 0;
 
-        UPDATE inventory
-        SET quantity = quantity - qnt
-        WHERE product_id = p_id AND warehouse_id = @target_warehouse;
+    ELSE 
+      -- Update inventory and insert into orderItem
+      UPDATE inventory
+      SET quantity = quantity - @available_quantity
+      WHERE product_id = p_id AND warehouse_id = @target_warehouse;
 
-        INSERT INTO orderItem (order_id, product_id, quantity, warehouse_id) VALUES (o_id, p_id, remaining_quantity, @target_warehouse);
+      INSERT INTO orderItem (order_id, product_id, quantity, warehouse_id) VALUES (o_id, p_id, @available_quantity, @target_warehouse);
 
-        SET remaining_quantity = 0;
+      SET remaining_quantity = remaining_quantity - @available_quantity;
 
-      ELSE 
-
-        SELECT * FROM inventory WHERE product_id = p_id AND warehouse_id = @target_warehouse FOR UPDATE;
-
-        UPDATE inventory
-        SET quantity = quantity - @available_quantity
-        WHERE product_id = p_id AND warehouse_id = @target_warehouse;
-
-        INSERT INTO orderItem (order_id, product_id, quantity, warehouse_id) VALUES (o_id, p_id, @available_quantity, @target_warehouse);
-
-        SET remaining_quantity = remaining_quantity - @available_quantity;
-
-      END IF;
+    END IF;
 
   END WHILE;
 
 END //
 
 DELIMITER ;
+
 
 
 
