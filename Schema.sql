@@ -1,5 +1,13 @@
-CREATE DATABASE dba;
+DROP DATABASE IF EXISTS dba;
+CREATE DATABASE IF NOT EXISTS dba;
 USE dba;
+
+DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS product;
+DROP TABLE IF EXISTS warehouse;
+DROP TABLE IF EXISTS inventory;
+DROP TABLE IF EXISTS orders;
+DROP TABLE IF EXISTS orderItem;
 
 CREATE TABLE users (
     user_id INT PRIMARY KEY AUTO_INCREMENT,
@@ -63,6 +71,7 @@ CREATE TABLE orderItem (
 );
 
 
+DROP PROCEDURE IF EXISTS SendProductToWarehouse;
 DELIMITER //
 
 CREATE PROCEDURE SendProductToWarehouse(IN p_id INT, IN qnt INT)
@@ -92,7 +101,7 @@ BEGIN
     SIGNAL SQLSTATE '45000'
     SET MESSAGE_TEXT = 'Not enough space in warehouses to stock all products';
   ELSE
-    -- Continue with the rest of the logic to send products to warehouses
+    
     SET remaining_quantity = qnt;
 
     -- Loop through warehouses while remaining_quantity > 0
@@ -165,7 +174,7 @@ DELIMITER ;
 
 
 
-
+DROP PROCEDURE IF EXISTS UpdateInventory;
 DELIMITER //
 
 CREATE PROCEDURE UpdateInventory(IN p_id INT, IN qnt INT)
@@ -197,25 +206,29 @@ BEGIN
 
       IF @available_quantity > remaining_quantity THEN
 
+        SELECT * FROM inventory WHERE product_id = p_id AND warehouse_id = @target_warehouse FOR UPDATE;
+
         UPDATE inventory
         SET quantity = quantity - qnt
         WHERE product_id = p_id AND warehouse_id = @target_warehouse;
 
-        UPDATE warehouse
-        SET available_area = available_area + (product_area * qnt)
-        WHERE warehouse_id = @target_warehouse;
+--         UPDATE warehouse
+--         SET available_area = available_area + (product_area * qnt)
+--         WHERE warehouse_id = @target_warehouse;
 
         SET remaining_quantity = 0;
 
       ELSE 
 
+        SELECT * FROM inventory WHERE product_id = p_id AND warehouse_id = @target_warehouse FOR UPDATE;
+
         UPDATE inventory
         SET quantity = quantity - @available_quantity
         WHERE product_id = p_id AND warehouse_id = @target_warehouse;
 
-        UPDATE warehouse
-        SET available_area = available_area + (product_area * @available_quantity)
-        WHERE warehouse_id = @target_warehouse;
+--         UPDATE warehouse
+--         SET available_area = available_area + (product_area * @available_quantity)
+--         WHERE warehouse_id = @target_warehouse;
 
 
         SET remaining_quantity = remaining_quantity - @available_quantity;
@@ -225,6 +238,7 @@ BEGIN
   END WHILE;
 
 END //
+
 DELIMITER ;
 
 

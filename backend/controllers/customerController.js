@@ -219,7 +219,7 @@ const addCart = async (req, res) => {
 };
 
 const placeOrder = async (req, res) => {
-  const customerId = req.session.id;
+  const customerId = req.session.userid;
   try {
     const connection = await util
       .promisify(db.mysqlConnection.getConnection)
@@ -229,6 +229,8 @@ const placeOrder = async (req, res) => {
     const queryAsync = util.promisify(connection.query).bind(connection);
 
     // Begin a transaction
+
+    await queryAsync("SET TRANSACTION ISOLATION LEVEL SERIALIZABLE");
 
     const eligibleProducts = [];
     const ineligibleProducts = [];
@@ -255,7 +257,7 @@ const placeOrder = async (req, res) => {
     console.log(added_time);
 
     await queryAsync(
-      "INSERT INTO order (customer_id, order_date, status) VALUES (?, ?, ?)",
+      "INSERT INTO orders (customer_id, order_date, status) VALUES (?, ?, ?)",
       [customerId, added_time, "Pending"]
     );
 
@@ -304,11 +306,45 @@ const placeOrder = async (req, res) => {
   }
 };
 
+const getAllOrders = async (req, res) => {
+  const customerId = req.session.userid;
+  const query = "SELECT * FROM orders WHERE customer_id = ?";
+  db.mysqlConnection.query(query, customerId, (error, result) => {
+    if (error) {
+      res
+        .status(500)
+        .json({ message: "Error fetching orders", error: error.message });
+    } else {
+      res.send(result);
+    }
+  });
+};
+
+const getOrder = async (req, res) => {
+  const orderId = req.params.id;
+  const customerId = req.session.userid;
+  console.log(customerId);
+  const query =
+    "SELECT oi.product_id, oi.quantity FROM orders o JOIN orderItem oi ON o.order_id = oi.order_id WHERE o.customer_id = ? AND o.order_id = ?";
+  db.mysqlConnection.query(query, [customerId, orderId], (error, result) => {
+    if (error) {
+      res.status(500).json({
+        message: `Error fetching order${orderId}`,
+        error: error.message,
+      });
+    } else {
+      res.send(result);
+    }
+  });
+};
+
 module.exports = {
   registerCustomer,
   getAllProducts,
   getProduct,
   getCategoryName,
+  getAllOrders,
+  getOrder,
   addCart,
   placeOrder,
 };
