@@ -57,7 +57,7 @@ CREATE TABLE orders (
   order_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
   customer_id INT NOT NULL,
   order_date DATETIME NOT NULL,
-  status enum("Accept","Pending","Reject") NOT NULL,
+  order_status enum("Accept","Pending","Reject") NOT NULL,
   FOREIGN KEY (customer_id) REFERENCES users(user_id)
 );
 
@@ -66,11 +66,15 @@ CREATE TABLE orderItem (
   order_id INT NOT NULL,
   product_id INT NOT NULL,
   quantity INT NOT NULL,
+  warehouse_id INT NOT NULL,
   FOREIGN KEY (order_id) REFERENCES orders(order_id),
-  FOREIGN KEY (product_id) REFERENCES product(product_id)
+  FOREIGN KEY (product_id) REFERENCES product(product_id),
+  FOREIGN KEY (warehouse_id) REFERENCES warehouse(warehouse_id)
 );
 
 
+
+-- Procedure for sending inbound order
 DROP PROCEDURE IF EXISTS SendProductToWarehouse;
 DELIMITER //
 
@@ -173,11 +177,11 @@ DELIMITER ;
 
 
 
-
-DROP PROCEDURE IF EXISTS UpdateInventory;
+-- Procedure for placing order and update database according to the order
+DROP PROCEDURE IF EXISTS PlaceOrder;
 DELIMITER //
 
-CREATE PROCEDURE UpdateInventory(IN p_id INT, IN qnt INT)
+CREATE PROCEDURE PlaceOrder(IN o_id INT, IN p_id INT, IN qnt INT)
 BEGIN
   
   DECLARE product_area INT;
@@ -212,9 +216,7 @@ BEGIN
         SET quantity = quantity - qnt
         WHERE product_id = p_id AND warehouse_id = @target_warehouse;
 
---         UPDATE warehouse
---         SET available_area = available_area + (product_area * qnt)
---         WHERE warehouse_id = @target_warehouse;
+        INSERT INTO orderItem (order_id, product_id, quantity, warehouse_id) VALUES (o_id, p_id, remaining_quantity, @target_warehouse);
 
         SET remaining_quantity = 0;
 
@@ -226,10 +228,7 @@ BEGIN
         SET quantity = quantity - @available_quantity
         WHERE product_id = p_id AND warehouse_id = @target_warehouse;
 
---         UPDATE warehouse
---         SET available_area = available_area + (product_area * @available_quantity)
---         WHERE warehouse_id = @target_warehouse;
-
+        INSERT INTO orderItem (order_id, product_id, quantity, warehouse_id) VALUES (o_id, p_id, @available_quantity, @target_warehouse);
 
         SET remaining_quantity = remaining_quantity - @available_quantity;
 
@@ -243,6 +242,16 @@ DELIMITER ;
 
 
 
+DROP PROCEDURE IF EXISTS UpdateStatus;
+DELIMITER //
+CREATE PROCEDURE UpdateStatus(IN o_id INT, IN new_status VARCHAR(10)) 
+BEGIN
+
+  UPDATE orders 
+  SET order_status = new_status
+  WHERE order_id = o_id;
+
+END //
 
 
 
@@ -250,9 +259,71 @@ DELIMITER ;
 
 
 
+-- Trigger for changing order status
+DROP TRIGGER IF EXISTS OrderStatusChanged;
 
+DELIMITER //
 
+CREATE TRIGGER OrderStatusChanged AFTER UPDATE ON orders
+FOR EACH ROW
+BEGIN
+  DECLARE w_id INT;
+  DECLARE p_id INT;
+  DECLARE qnt INT;
+  DECLARE done BOOLEAN DEFAULT FALSE;
+  
+  -- Declare and initialize the cursor variables
+  DECLARE cur CURSOR FOR
+    SELECT oi.warehouse_id, oi.product_id, oi.quantity
+    FROM orderItem oi
+    WHERE oi.order_id = NEW.order_id;
 
+  DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
 
+  -- Handle the case when status changes from 'Pending' to 'Accept'
+  IF (OLD.order_status = 'Pending') AND (NEW.order_status = 'Accept') THEN
+    OPEN cur;
+    FETCH cur INTO w_id, p_id, qnt;
 
+    WHILE NOT done DO
+      -- Update warehouse available area and move to the next row
+      UPDATE warehouse
+      SET available_area = available_area + (qnt * (SELECT length * width * height FROM product WHERE product_id = p_id))
+      WHERE warehouse_id = w_id;
+      
+      FETCH cur INTO w_id, p_id, qnt;
+    END WHILE;
+    
+    CLOSE cur;
+  
+  -- Handle the case when status changes from 'Pending' to 'Reject'
+  ELSEIF (OLD.order_status = 'Pending') AND (NEW.order_status = 'Reject') THEN
+    OPEN cur;
+    FETCH cur INTO w_id, p_id, qnt;
 
+    WHILE NOT done DO
+      -- Update inventory quantity and move to the next row
+      UPDATE inventory
+      SET quantity = quantity + qnt
+      WHERE product_id = p_id AND warehouse_id = w_id;
+      
+      FETCH cur INTO w_id, p_id, qnt;
+    END WHILE;
+    
+    CLOSE cur;
+
+  -- Handle other status changes by simply moving the cursor to the next row
+  ELSE
+    OPEN cur;
+    FETCH cur INTO w_id, p_id, qnt;
+
+    WHILE NOT done DO
+      FETCH cur INTO w_id, p_id, qnt;
+    END WHILE;
+    
+    CLOSE cur;
+  END IF;
+  
+END //
+
+DELIMITER ;

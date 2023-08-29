@@ -18,6 +18,8 @@ post: /customer/addCart
 
 post: /customer/placeOrder (will still go through for eligible product)
 
+put: /updateStatus/:id (update order's status)
+
 admin:
 
 post: /admins/register

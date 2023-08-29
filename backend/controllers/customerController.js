@@ -230,8 +230,6 @@ const placeOrder = async (req, res) => {
 
     // Begin a transaction
 
-    await queryAsync("SET TRANSACTION ISOLATION LEVEL SERIALIZABLE");
-
     const eligibleProducts = [];
     const ineligibleProducts = [];
 
@@ -257,7 +255,7 @@ const placeOrder = async (req, res) => {
     console.log(added_time);
 
     await queryAsync(
-      "INSERT INTO orders (customer_id, order_date, status) VALUES (?, ?, ?)",
+      "INSERT INTO orders (customer_id, order_date, order_status) VALUES (?, ?, ?)",
       [customerId, added_time, "Pending"]
     );
 
@@ -271,13 +269,12 @@ const placeOrder = async (req, res) => {
       const { productId, quantity } = cartItem;
       console.log(cartItem);
 
-      await queryAsync(
-        "INSERT INTO orderItem (order_id, product_id, quantity) VALUES (?, ?, ?)",
-        [orderId, productId, quantity]
-      );
-
       // Update inventory quantity
-      await queryAsync("CALL UpdateInventory(?, ?)", [productId, quantity]);
+      await queryAsync("CALL PlaceOrder(? , ?, ?)", [
+        orderId,
+        productId,
+        quantity,
+      ]);
     }
 
     await util.promisify(connection.commit).call(connection);
@@ -338,6 +335,21 @@ const getOrder = async (req, res) => {
   });
 };
 
+const updateStatus = async (req, res) => {
+  const orderId = req.params.id;
+  const { newStatus } = req.body;
+  try {
+    await db.mysqlConnection.query("CALL UpdateStatus(?, ?)", [
+      orderId,
+      newStatus,
+    ]);
+    res.status(200).json({ message: "Order updated successfully" });
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).json({ message: "An error occurred." });
+  }
+};
+
 module.exports = {
   registerCustomer,
   getAllProducts,
@@ -347,4 +359,5 @@ module.exports = {
   getOrder,
   addCart,
   placeOrder,
+  updateStatus,
 };
