@@ -380,31 +380,6 @@ const moveProducts = async (req, res) => {
   }
 };
 
-const createInventory = async (req, res) => {
-  try {
-    var data = {
-      product_id: req.body.product_id,
-      warehouse_id: req.body.warehouse_id,
-      quantity: req.body.quantity,
-    };
-    console.log(data);
-    let result = await db.mysqlConnection.query(
-      "INSERT INTO inventory SET ? ",
-      [data],
-      function (err, rows) {
-        if (err) {
-          res.send({
-            message: "Error",
-            err,
-          });
-        } else {
-          res.send("success");
-        }
-      }
-    );
-  } catch (error) {}
-};
-
 module.exports = {
   registerAdmin,
   createCatagory,
@@ -414,7 +389,6 @@ module.exports = {
   createWarehouse,
   updateWarehouse,
   deleteWarehouse,
-  createInventory,
   getAllWarehouses,
   getWarehouse,
   moveProducts,
