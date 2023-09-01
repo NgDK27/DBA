@@ -224,14 +224,14 @@ const deleteWarehouse = async (req, res) => {
                 });
               } else {
                 found = true;
+                res.status(200).send("Delete successfully");
               }
             }
           );
         }
       }
+
       if (!found) {
-        res.status(200).send("Delete successfully");
-      } else {
         res.status(403).send("There are products in this warehouse");
       }
     }
