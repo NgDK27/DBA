@@ -278,7 +278,7 @@ const placeOrder = async (req, res) => {
     }
 
     await util.promisify(connection.commit).call(connection);
-    connection.release(); // Release the connection back to the pool
+    connection.release((error) => (error ? reject(error) : resolve())); // Release the connection back to the pool
 
     // Clear the cart
     global.cart = [];
@@ -296,7 +296,7 @@ const placeOrder = async (req, res) => {
     // Rollback the transaction and release the connection in case of an error
     if (connection) {
       await util.promisify(connection.rollback).call(connection);
-      connection.release();
+      connection.release((error) => (error ? reject(error) : resolve()));
     }
 
     res.status(500).json({ message: "An error occurred." });

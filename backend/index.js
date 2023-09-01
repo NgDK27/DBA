@@ -41,7 +41,7 @@ db.mysqlConnection.getConnection((error, connection) => {
     console.error("Error connecting to MySQL:", error);
   } else {
     console.log("Connected to MySQL database");
-    connection.release(); // Release the connection back to the pool
+    connection.release((error) => (error ? reject(error) : resolve()));
   }
 });
 

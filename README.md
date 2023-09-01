@@ -75,4 +75,7 @@ Category in mongodb: {
 4 categories rn: 1:clothes, 2:food, 3:books, 4:electronics
 
 openssl genpkey -algorithm RSA -out private.key
+
 openssl req -new -key private.key -out localhost.csr -subj "/CN=localhost"
+
+openssl x509 -req -days 365 -in localhost.csr -signkey private.key -out certificate.crt

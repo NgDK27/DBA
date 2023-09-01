@@ -9,7 +9,6 @@ const {
   createWarehouse,
   updateWarehouse,
   deleteWarehouse,
-  createInventory,
   getAllWarehouses,
   getWarehouse,
   moveProducts,

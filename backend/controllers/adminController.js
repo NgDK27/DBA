@@ -199,6 +199,7 @@ const updateWarehouse = async (req, res) => {
 };
 
 const deleteWarehouse = async (req, res) => {
+  let found = false;
   const name = req.query;
   const getDeleteWarehouseQuery =
     "SELECT * FROM warehouse w LEFT JOIN inventory i ON w.warehouse_id = i.warehouse_id LEFT JOIN product p ON i.product_id = p.product_id WHERE p.product_id IS NULL";
@@ -222,13 +223,17 @@ const deleteWarehouse = async (req, res) => {
                   error: error.message,
                 });
               } else {
-                res.status(200).send("Delete successfully");
+                found = true;
               }
             }
           );
         }
       }
-      res.status(403).send("There are products in this warehouse");
+      if (!found) {
+        res.status(200).send("Delete successfully");
+      } else {
+        res.status(403).send("There are products in this warehouse");
+      }
     }
   });
 };
@@ -250,9 +255,9 @@ const getAllWarehouses = async (req, res) => {
 const getWarehouse = async (req, res) => {
   const warehouseId = req.params.id;
   const query =
-    "SELECT p.product_id, SUM(i.quantity) AS total_quantity, (w.total_area_volume - w.available_area) as occupied_area FROM inventory i JOIN warehouse w ON w.warehouse_id = i.warehouse_id JOIN product p ON i.product_id = p.product_id WHERE i.warehouse_id = ? GROUP BY i.warehouse_id, p.product_id";
-  const avalableArea =
-    "SELECT w.available FROM warehouse w WHERE w.warehouse_id = ?";
+    "SELECT p.product_id, SUM(i.quantity) AS total_quantity, (p.length*p.width*p.height*SUM(i.quantity)) as occupied_area FROM inventory i JOIN warehouse w ON w.warehouse_id = i.warehouse_id JOIN product p ON i.product_id = p.product_id WHERE i.warehouse_id = ? GROUP BY i.warehouse_id, p.product_id";
+  const availableArea =
+    "SELECT w.available_area FROM warehouse w WHERE w.warehouse_id = ?";
   Promise.all([
     new Promise((resolve, reject) => {
       db.mysqlConnection.query(query, warehouseId, (err, results) => {
@@ -261,7 +266,7 @@ const getWarehouse = async (req, res) => {
       });
     }),
     new Promise((resolve, reject) => {
-      db.mysqlConnection.query(avalableArea, warehouseId, (err, results) => {
+      db.mysqlConnection.query(availableArea, warehouseId, (err, results) => {
         if (err) reject(err);
         else resolve(results);
       });
@@ -319,7 +324,7 @@ const moveProducts = async (req, res) => {
         JSON.parse(JSON.stringify(destinationAvailableArea))[0].available_area
       ) {
         await util.promisify(connection.rollback).call(connection);
-        connection.release();
+        connection.release((error) => (error ? reject(error) : resolve()));
         res.status(500).json({ message: "Not enough space" });
       } else {
         // Step 1: Update source warehouse inventory
@@ -362,7 +367,7 @@ const moveProducts = async (req, res) => {
         await util.promisify(connection.commit).call(connection);
 
         // Release the connection
-        connection.release();
+        connection.release((error) => (error ? reject(error) : resolve()));
 
         res.json({ message: "Products moved between warehouses." });
       }
@@ -373,7 +378,7 @@ const moveProducts = async (req, res) => {
     // Rollback the transaction and release the connection in case of an error
     if (connection) {
       await util.promisify(connection.rollback).call(connection);
-      connection.release();
+      connection.release((error) => (error ? reject(error) : resolve()));
     }
 
     res.status(500).json({ message: "An error occurred." });
