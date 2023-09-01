@@ -30,17 +30,22 @@ const registerAdmin = async (req, res) => {
   }
 };
 
-const createCatagory = async (req, res) => {
-  const { id, name } = req.body;
+const createCategory = async (req, res) => {
+  const { name, parentName, attributes } = req.body;
 
-  const newCategory = await Category.create(
-    { id: id, name: name },
-    { new: true }
-  );
+  const parentCategory = await Category.findOne({ name: parentName });
+
+  const newCategory = new Category({
+    name: name,
+    parent: parentCategory ? parentCategory._id : parentName,
+    attributes: attributes,
+  });
+  await newCategory.save();
+
   res.status(200).json(newCategory);
 };
 
-const getAllCatagories = async (req, res) => {
+const getAllCategories = async (req, res) => {
   const categories = await Category.find({});
   res.status(200).json(categories);
 };
@@ -51,7 +56,7 @@ const updateCategory = async (req, res) => {
 
   try {
     const updatedCategory = await Category.findOneAndUpdate(
-      { id: categoryId },
+      { categoryId: categoryId },
       { name },
       { new: true }
     ).exec();
@@ -387,8 +392,8 @@ const moveProducts = async (req, res) => {
 
 module.exports = {
   registerAdmin,
-  createCatagory,
-  getAllCatagories,
+  createCategory,
+  getAllCategories,
   updateCategory,
   deleteCategory,
   createWarehouse,

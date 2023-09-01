@@ -32,7 +32,7 @@ const registerCustomer = async (req, res) => {
 
 const getCategoryName = async (categoryId) => {
   try {
-    const category = await Category.findOne({ id: categoryId });
+    const category = await Category.findOne({ categoryId: categoryId });
     return category.name;
   } catch (error) {
     console.error("Error fetching category name:", error);
