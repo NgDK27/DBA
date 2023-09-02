@@ -26,6 +26,8 @@ post: /admins/register
 
 get: /admins/categories
 
+get: /admins/categories/:id
+
 post: /admins/categories
 
 put: /admins/categories/:id
