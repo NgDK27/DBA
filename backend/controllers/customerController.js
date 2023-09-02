@@ -33,11 +33,24 @@ const registerCustomer = async (req, res) => {
 const getCategoryName = async (categoryId) => {
   try {
     const category = await Category.findOne({ categoryId: categoryId });
+
     return category.name;
   } catch (error) {
     console.error("Error fetching category name:", error);
     return null;
   }
+};
+
+const getCategoryAttributes = async (categoryId, attributes = []) => {
+  const category = await Category.findOne({ categoryId: categoryId }).exec();
+  if (!category) return attributes;
+
+  attributes = [...attributes, ...category.attributes];
+  if (category.parent) {
+    return getCategoryAttributes(category.parent, attributes);
+  }
+
+  return attributes;
 };
 
 const getAllProducts = async (req, res) => {
@@ -121,13 +134,15 @@ const getProduct = async (req, res) => {
     if (error) {
       return res
         .status(500)
-        .json({ message: "Error deleting category", error: error.message });
+        .json({ message: "Error fetching product", error: error.message });
     } else {
       const getProductData = async (results) => {
         const productData = [];
 
         for (const product of results) {
           const category = await getCategoryName(product.category_id);
+          const attributes = await getCategoryAttributes(product.category_id);
+
           productData.push({
             product_id: product.product_id,
             title: product.title,
@@ -137,6 +152,7 @@ const getProduct = async (req, res) => {
             category: category,
             quantity: product.available_quantity || 0,
             seller: product.seller,
+            attributes: attributes,
           });
         }
 
@@ -355,6 +371,7 @@ module.exports = {
   getAllProducts,
   getProduct,
   getCategoryName,
+  getCategoryAttributes,
   getAllOrders,
   getOrder,
   addCart,

@@ -3,7 +3,10 @@ const path = require("path");
 const moment = require("moment");
 const db = require("../dbconnection");
 const bcrypt = require("bcrypt");
-const { getCategoryName } = require("./customerController");
+const {
+  getCategoryName,
+  getCategoryAttributes,
+} = require("./customerController");
 
 const registerSeller = async (req, res) => {
   const { username, email, password } = req.body;
@@ -125,6 +128,8 @@ const getProduct = async (req, res) => {
 
           for (const product of results) {
             const category = await getCategoryName(product.category_id);
+            const attributes = await getCategoryAttributes(product.category_id);
+
             productData.push({
               product_id: product.product_id,
               title: product.title,
@@ -133,6 +138,7 @@ const getProduct = async (req, res) => {
               image: product.image,
               category: category,
               quantity: product.available_quantity || 0,
+              attributes: attributes,
             });
           }
 
