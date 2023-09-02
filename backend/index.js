@@ -17,7 +17,12 @@ const sellerRoute = require("./routes/seller");
 const app = express();
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.json());
-app.use(cors());
+app.use(
+  cors({
+    origin: "https://localhost",
+    credentials: true,
+  })
+);
 app.use(helmet());
 app.use(
   session({
@@ -25,7 +30,7 @@ app.use(
     resave: true,
     saveUninitialized: true,
     cookie: {
-      secure: true, // Set to true when using HTTPS
+      secure: true,
       httpOnly: true,
     },
   })
@@ -36,7 +41,7 @@ db.mysqlConnection.getConnection((error, connection) => {
     console.error("Error connecting to MySQL:", error);
   } else {
     console.log("Connected to MySQL database");
-    connection.release(); // Release the connection back to the pool
+    connection.release((error) => (error ? reject(error) : resolve()));
   }
 });
 
@@ -71,7 +76,7 @@ mongoose
 // Set up HTTPS server
 const options = {
   key: fs.readFileSync("./security/private.key", "utf-8"),
-  cert: fs.readFileSync("./security/certificate.crt", "utf8"),
+  cert: fs.readFileSync("./security/certificate.crt", "utf-8"),
 };
 
 https.createServer(options, app).listen(443, () => {

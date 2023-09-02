@@ -118,7 +118,7 @@ const getProduct = async (req, res) => {
       if (error) {
         return res
           .status(500)
-          .json({ message: "Error deleting category", error: error.message });
+          .json({ message: "Error fetching product", error: error.message });
       } else {
         const getProductData = async (results) => {
           const productData = [];

@@ -32,7 +32,7 @@ const registerCustomer = async (req, res) => {
 
 const getCategoryName = async (categoryId) => {
   try {
-    const category = await Category.findOne({ id: categoryId });
+    const category = await Category.findOne({ categoryId: categoryId });
     return category.name;
   } catch (error) {
     console.error("Error fetching category name:", error);
@@ -278,7 +278,7 @@ const placeOrder = async (req, res) => {
     }
 
     await util.promisify(connection.commit).call(connection);
-    connection.release(); // Release the connection back to the pool
+    connection.release((error) => (error ? reject(error) : resolve())); // Release the connection back to the pool
 
     // Clear the cart
     global.cart = [];
@@ -296,7 +296,7 @@ const placeOrder = async (req, res) => {
     // Rollback the transaction and release the connection in case of an error
     if (connection) {
       await util.promisify(connection.rollback).call(connection);
-      connection.release();
+      connection.release((error) => (error ? reject(error) : resolve()));
     }
 
     res.status(500).json({ message: "An error occurred." });

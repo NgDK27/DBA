@@ -30,39 +30,71 @@ const registerAdmin = async (req, res) => {
   }
 };
 
-const createCatagory = async (req, res) => {
-  const { id, name } = req.body;
+const createCategory = async (req, res) => {
+  const { name, parentName, attributes } = req.body;
 
-  const newCategory = await Category.create(
-    { id: id, name: name },
-    { new: true }
-  );
+  const parentCategory = await Category.findOne({ name: parentName });
+
+  const newCategory = new Category({
+    name: name,
+    parent: parentCategory ? parentCategory._id : null,
+    attributes: attributes,
+  });
+  await newCategory.save();
+
   res.status(200).json(newCategory);
 };
 
-const getAllCatagories = async (req, res) => {
+const getAllCategories = async (req, res) => {
   const categories = await Category.find({});
   res.status(200).json(categories);
 };
 
+const getCategory = async (req, res) => {
+  const categoryId = req.params.id;
+  try {
+    const category = await Category.findOne({ categoryId: categoryId }).exec();
+    res.status(200).json(category);
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error fetching category", error: error.message });
+  }
+};
+
 const updateCategory = async (req, res) => {
   const categoryId = req.params.id;
-  const { name } = req.body;
+  const { name, attributes } = req.body;
 
   try {
-    const updatedCategory = await Category.findOneAndUpdate(
-      { id: categoryId },
-      { name },
-      { new: true }
-    ).exec();
+    const category = await Category.findOne({ categoryId: categoryId }).exec();
 
-    if (updatedCategory) {
-      res
-        .status(200)
-        .json({ message: "Category updated", category: updatedCategory });
-    } else {
-      res.status(404).json({ message: "Category not found" });
+    if (!category) {
+      return res.status(404).json({ message: "Category not found" });
     }
+
+    if (name) {
+      category.name = name;
+    }
+
+    if (attributes) {
+      for (const updatedAttribute of attributes) {
+        const existingAttribute = category.attributes.find(
+          (attr) => attr.key === updatedAttribute.key
+        );
+
+        if (existingAttribute) {
+          existingAttribute.value = updatedAttribute.value;
+        } else {
+          category.attributes.push(updatedAttribute);
+        }
+      }
+    }
+
+    // Save the updated category
+    await category.save();
+
+    res.status(200).json({ message: "Category updated", category });
   } catch (error) {
     res
       .status(500)
@@ -70,44 +102,57 @@ const updateCategory = async (req, res) => {
   }
 };
 
-const deleteCategory = async (req, res) => {
-  const categoryId = req.params.id;
-  req.session.categoryId = req.params.id;
-  const getCategoryIDQuery = "SELECT DISTINCT category_id FROM product";
-  const allProductCategory = [];
+async function hasAssociatedProducts(categoryId) {
+  try {
+    const rows = await db.mysqlConnection.query(
+      "SELECT DISTINCT category_id FROM product WHERE category_id = ?",
+      [categoryId]
+    );
 
-  db.mysqlConnection.query(getCategoryIDQuery, async (error, result) => {
-    if (error) {
-      return res
-        .status(500)
-        .json({ message: "Error deleting category", error: error.message });
-    } else {
-      for (const category of result) {
-        allProductCategory.push(category.category_id);
-      }
-      console.log(allProductCategory);
+    if (rows.length > 0) {
+      return true; // There are associated products in this category
+    }
 
-      if (allProductCategory.includes(parseInt(req.session.categoryId))) {
-        res.status(403).send("There are products in this category");
-      } else {
-        try {
-          const deleteCate = await Category.deleteOne(
-            {
-              id: parseInt(req.session.categoryId),
-            },
-            { new: true }
-          ).exec();
-
-          res.status(200).send("Delete successfully");
-        } catch (error) {
-          res.status(500).json({
-            message: "Error deleting product",
-            error: error.message,
-          });
-        }
+    // Check child categories recursively
+    const category = await Category.findOne({ categoryId: categoryId }).exec();
+    const childCategories = await Category.find({
+      parent: category._id,
+    }).exec();
+    for (const childCategory of childCategories) {
+      if (await hasAssociatedProducts(childCategory.categoryId)) {
+        return true; // Child category or its descendants have associated products
       }
     }
-  });
+
+    return false; // No associated products found in this category or its children
+  } catch (error) {
+    throw error;
+  }
+}
+
+const deleteCategory = async (req, res) => {
+  const categoryId = parseInt(req.params.id);
+  const checkProduct = await hasAssociatedProducts(categoryId);
+
+  try {
+    // Check if the category or its children have associated products
+    if (checkProduct) {
+      return res.status(403).json({
+        message:
+          "Cannot delete. Products exist in this category or its children.",
+      });
+    }
+
+    const category = await Category.findOne({ categoryId: categoryId }).exec();
+    // No associated products, so it's safe to delete
+    await Category.findByIdAndDelete(category._id).exec();
+
+    res.status(200).json({ message: "Category deleted successfully" });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error deleting category", error: error.message });
+  }
 };
 
 const createWarehouse = async (req, res) => {
@@ -199,6 +244,7 @@ const updateWarehouse = async (req, res) => {
 };
 
 const deleteWarehouse = async (req, res) => {
+  let found = false;
   const name = req.query;
   const getDeleteWarehouseQuery =
     "SELECT * FROM warehouse w LEFT JOIN inventory i ON w.warehouse_id = i.warehouse_id LEFT JOIN product p ON i.product_id = p.product_id WHERE p.product_id IS NULL";
@@ -222,13 +268,17 @@ const deleteWarehouse = async (req, res) => {
                   error: error.message,
                 });
               } else {
+                found = true;
                 res.status(200).send("Delete successfully");
               }
             }
           );
         }
       }
-      res.status(403).send("There are products in this warehouse");
+
+      if (!found) {
+        res.status(403).send("There are products in this warehouse");
+      }
     }
   });
 };
@@ -250,9 +300,9 @@ const getAllWarehouses = async (req, res) => {
 const getWarehouse = async (req, res) => {
   const warehouseId = req.params.id;
   const query =
-    "SELECT p.product_id, SUM(i.quantity) AS total_quantity, (w.total_area_volume - w.available_area) as occupied_area FROM inventory i JOIN warehouse w ON w.warehouse_id = i.warehouse_id JOIN product p ON i.product_id = p.product_id WHERE i.warehouse_id = ? GROUP BY i.warehouse_id, p.product_id";
-  const avalableArea =
-    "SELECT w.available FROM warehouse w WHERE w.warehouse_id = ?";
+    "SELECT p.product_id, SUM(i.quantity) AS total_quantity, (p.length*p.width*p.height*SUM(i.quantity)) as occupied_area FROM inventory i JOIN warehouse w ON w.warehouse_id = i.warehouse_id JOIN product p ON i.product_id = p.product_id WHERE i.warehouse_id = ? GROUP BY i.warehouse_id, p.product_id";
+  const availableArea =
+    "SELECT w.available_area FROM warehouse w WHERE w.warehouse_id = ?";
   Promise.all([
     new Promise((resolve, reject) => {
       db.mysqlConnection.query(query, warehouseId, (err, results) => {
@@ -261,7 +311,7 @@ const getWarehouse = async (req, res) => {
       });
     }),
     new Promise((resolve, reject) => {
-      db.mysqlConnection.query(avalableArea, warehouseId, (err, results) => {
+      db.mysqlConnection.query(availableArea, warehouseId, (err, results) => {
         if (err) reject(err);
         else resolve(results);
       });
@@ -319,7 +369,7 @@ const moveProducts = async (req, res) => {
         JSON.parse(JSON.stringify(destinationAvailableArea))[0].available_area
       ) {
         await util.promisify(connection.rollback).call(connection);
-        connection.release();
+        connection.release((error) => (error ? reject(error) : resolve()));
         res.status(500).json({ message: "Not enough space" });
       } else {
         // Step 1: Update source warehouse inventory
@@ -362,7 +412,7 @@ const moveProducts = async (req, res) => {
         await util.promisify(connection.commit).call(connection);
 
         // Release the connection
-        connection.release();
+        connection.release((error) => (error ? reject(error) : resolve()));
 
         res.json({ message: "Products moved between warehouses." });
       }
@@ -373,48 +423,23 @@ const moveProducts = async (req, res) => {
     // Rollback the transaction and release the connection in case of an error
     if (connection) {
       await util.promisify(connection.rollback).call(connection);
-      connection.release();
+      connection.release((error) => (error ? reject(error) : resolve()));
     }
 
     res.status(500).json({ message: "An error occurred." });
   }
 };
 
-const createInventory = async (req, res) => {
-  try {
-    var data = {
-      product_id: req.body.product_id,
-      warehouse_id: req.body.warehouse_id,
-      quantity: req.body.quantity,
-    };
-    console.log(data);
-    let result = await db.mysqlConnection.query(
-      "INSERT INTO inventory SET ? ",
-      [data],
-      function (err, rows) {
-        if (err) {
-          res.send({
-            message: "Error",
-            err,
-          });
-        } else {
-          res.send("success");
-        }
-      }
-    );
-  } catch (error) {}
-};
-
 module.exports = {
   registerAdmin,
-  createCatagory,
-  getAllCatagories,
+  createCategory,
+  getAllCategories,
+  getCategory,
   updateCategory,
   deleteCategory,
   createWarehouse,
   updateWarehouse,
   deleteWarehouse,
-  createInventory,
   getAllWarehouses,
   getWarehouse,
   moveProducts,

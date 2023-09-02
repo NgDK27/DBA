@@ -280,50 +280,34 @@ BEGIN
 
   DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
 
-  -- Handle the case when status changes from 'Pending' to 'Accept'
-  IF (OLD.order_status = 'Pending') AND (NEW.order_status = 'Accept') THEN
-    OPEN cur;
-    FETCH cur INTO w_id, p_id, qnt;
+  OPEN cur;
+  FETCH cur INTO w_id, p_id, qnt;
 
-    WHILE NOT done DO
-      -- Update warehouse available area and move to the next row
+  WHILE NOT done DO
+    IF (OLD.order_status = 'Pending') AND (NEW.order_status = 'Accept') THEN
+      -- Update warehouse available area
+      SELECT length * width * height 
+      INTO @product_area FROM product 
+      WHERE product_id = p_id;
+
       UPDATE warehouse
-      SET available_area = available_area + (qnt * (SELECT length * width * height FROM product WHERE product_id = p_id))
+      SET available_area = available_area + (qnt * @product_area)
       WHERE warehouse_id = w_id;
-      
-      FETCH cur INTO w_id, p_id, qnt;
-    END WHILE;
-    
-    CLOSE cur;
-  
-  -- Handle the case when status changes from 'Pending' to 'Reject'
-  ELSEIF (OLD.order_status = 'Pending') AND (NEW.order_status = 'Reject') THEN
-    OPEN cur;
-    FETCH cur INTO w_id, p_id, qnt;
 
-    WHILE NOT done DO
-      -- Update inventory quantity and move to the next row
+    ELSEIF (OLD.order_status = 'Pending') AND (NEW.order_status = 'Reject') THEN
+      -- Update inventory quantity
       UPDATE inventory
       SET quantity = quantity + qnt
       WHERE product_id = p_id AND warehouse_id = w_id;
-      
-      FETCH cur INTO w_id, p_id, qnt;
-    END WHILE;
-    
-    CLOSE cur;
 
-  -- Handle other status changes by simply moving the cursor to the next row
-  ELSE
-    OPEN cur;
+    END IF;
+
     FETCH cur INTO w_id, p_id, qnt;
-
-    WHILE NOT done DO
-      FETCH cur INTO w_id, p_id, qnt;
-    END WHILE;
-    
-    CLOSE cur;
-  END IF;
+  END WHILE;
+  
+  CLOSE cur;
   
 END //
 
 DELIMITER ;
+
