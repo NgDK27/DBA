@@ -1,4 +1,3 @@
-const express = require("express");
 const path = require("path");
 const moment = require("moment");
 const db = require("../dbconnection");
@@ -47,7 +46,7 @@ const createProduct = async (req, res) => {
       category_id: req.body.category_id,
       added_time: moment().format("YYYY-MM-DD HH:mm:ss"),
     };
-    console.log(data);
+
     let result = await db.mysqlConnection.query(
       "INSERT INTO product ST ? ",
       [data],
@@ -62,7 +61,9 @@ const createProduct = async (req, res) => {
         }
       }
     );
-  } catch (error) {}
+  } catch (error) {
+    res.status(500).json(error);
+  }
 };
 
 const getAllProducts = async (req, res) => {
@@ -97,7 +98,6 @@ const getAllProducts = async (req, res) => {
 
       getProductData(results)
         .then((productData) => {
-          console.log(productData);
           res.status(200).json(productData);
         })
         .catch((error) => {
@@ -147,7 +147,6 @@ const getProduct = async (req, res) => {
 
         getProductData(results)
           .then((productData) => {
-            console.log(productData);
             res.status(200).json(productData);
           })
           .catch((error) => {

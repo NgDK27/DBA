@@ -1,9 +1,7 @@
-const express = require("express");
 const db = require("../dbconnection");
 const util = require("util");
 const bcrypt = require("bcrypt");
 const Category = require("../models/category");
-const session = require("express-session");
 
 const registerAdmin = async (req, res) => {
   const { username, email, password } = req.body;
@@ -25,7 +23,6 @@ const registerAdmin = async (req, res) => {
       }
     );
   } catch (error) {
-    console.log(error);
     res.status(500).send("Error registering user");
   }
 };
@@ -167,7 +164,7 @@ const createWarehouse = async (req, res) => {
       total_area_volume: req.body.area,
       available_area: req.body.area,
     };
-    console.log(data);
+
     let result = await db.mysqlConnection.query(
       "INSERT INTO warehouse SET ? ",
       [data],
@@ -182,7 +179,9 @@ const createWarehouse = async (req, res) => {
         }
       }
     );
-  } catch (error) {}
+  } catch (error) {
+    res.status(500).json(error);
+  }
 };
 
 const updateWarehouse = async (req, res) => {

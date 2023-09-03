@@ -1,4 +1,3 @@
-const express = require("express");
 const db = require("../dbconnection");
 const moment = require("moment");
 const util = require("util");
@@ -113,7 +112,6 @@ const getAllProducts = async (req, res) => {
 
       getProductData(results)
         .then((productData) => {
-          console.log(productData);
           res.status(200).json(productData);
         })
         .catch((error) => {
@@ -161,7 +159,6 @@ const getProduct = async (req, res) => {
 
       getProductData(results)
         .then((productData) => {
-          console.log(productData);
           res.status(200).json(productData);
         })
         .catch((error) => {
@@ -336,7 +333,7 @@ const getAllOrders = async (req, res) => {
 const getOrder = async (req, res) => {
   const orderId = req.params.id;
   const customerId = req.session.userid;
-  console.log(customerId);
+
   const query =
     "SELECT oi.product_id, oi.quantity FROM orders o JOIN orderItem oi ON o.order_id = oi.order_id WHERE o.customer_id = ? AND o.order_id = ?";
   db.mysqlConnection.query(query, [customerId, orderId], (error, result) => {

@@ -31,10 +31,8 @@ categorySchema.pre("save", async function (next) {
       .limit(1);
 
     if (biggestCateId[0].categoryId > count) {
-      console.log("oke");
       this.categoryId = biggestCateId[0].categoryId + 1;
     } else {
-      console.log("not oke");
       this.categoryId = count + 1;
     }
   }

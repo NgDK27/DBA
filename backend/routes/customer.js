@@ -13,7 +13,6 @@ const {
 const { checkRole } = require("../middlewares/role");
 const router = express.Router();
 
-// Register a customer
 router.route("/register").post(registerCustomer);
 router.get("/getAllProducts", checkRole("customer"), getAllProducts);
 router.get("/getProduct/:id", checkRole("customer"), getProduct);

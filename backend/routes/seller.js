@@ -28,7 +28,6 @@ const upload = multer({
   storage: storage,
 });
 
-// Register a customer
 router.route("/register").post(registerSeller);
 router.post(
   "/createProduct",
