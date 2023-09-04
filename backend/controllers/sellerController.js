@@ -48,7 +48,7 @@ const createProduct = async (req, res) => {
     };
 
     let result = await db.mysqlConnection.query(
-      "INSERT INTO product ST ? ",
+      "INSERT INTO product SET ? ",
       [data],
       function (err, rows) {
         if (err) {

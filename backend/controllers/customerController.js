@@ -265,7 +265,6 @@ const placeOrder = async (req, res) => {
     }
 
     const added_time = moment().format("YYYY-MM-DD HH:mm:ss");
-    console.log(added_time);
 
     await queryAsync(
       "INSERT INTO orders (customer_id, order_date, order_status) VALUES (?, ?, ?)",
@@ -276,7 +275,6 @@ const placeOrder = async (req, res) => {
       "SELECT LAST_INSERT_ID() as order_id"
     );
     const orderId = JSON.parse(JSON.stringify(orderIdResult))[0].order_id;
-    console.log(orderId);
 
     for (const cartItem of eligibleProducts) {
       const { productId, quantity } = cartItem;

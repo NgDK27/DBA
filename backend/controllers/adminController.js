@@ -284,7 +284,7 @@ const deleteWarehouse = async (req, res) => {
 
 const getAllWarehouses = async (req, res) => {
   const query =
-    "SELECT w.warehouse_id, SUM(i.quantity) AS total_quantity, w.available_area FROM warehouse w LEFT JOIN inventory i ON w.warehouse_id = i.warehouse_id LEFT JOIN product p ON i.product_id = p.product_id GROUP BY i.warehouse_id";
+    "SELECT w.warehouse_id, w.name, SUM(i.quantity) AS total_quantity, w.available_area FROM warehouse w LEFT JOIN inventory i ON w.warehouse_id = i.warehouse_id LEFT JOIN product p ON i.product_id = p.product_id GROUP BY i.warehouse_id";
   db.mysqlConnection.query(query, (error, result) => {
     if (error) {
       res
