@@ -1,4 +1,3 @@
-const express = require("express");
 const db = require("../dbconnection");
 const moment = require("moment");
 const util = require("util");
@@ -41,6 +40,11 @@ const getCategoryName = async (categoryId) => {
   }
 };
 
+const getAllCategories = async (req, res) => {
+  const categories = await Category.find({});
+  res.status(200).json(categories);
+};
+
 const getCategoryAttributes = async (categoryId, attributes = []) => {
   const category = await Category.findOne({ categoryId: categoryId }).exec();
   if (!category) return attributes;
@@ -54,43 +58,80 @@ const getCategoryAttributes = async (categoryId, attributes = []) => {
 };
 
 const getAllProducts = async (req, res) => {
-  const { minPrice, maxPrice, search, sortField, sortOrder } = req.query;
+  try {
+    const { minPrice, maxPrice, search, sortField, sortOrder, category } =
+      req.query;
 
-  let query =
-    "SELECT p.product_id, p.title, p.description, p.price, p.image, p.category_id, SUM(i.quantity) AS available_quantity, u.username AS seller FROM product p LEFT JOIN inventory i ON p.product_id = i.product_id JOIN users u ON p.seller_id = u.user_id";
-  const queryParams = [];
+    // Create a function to recursively find all child category IDs
+    const allChildCategoryIds = async (categoryId) => {
+      const category = await Category.findOne({ _id: categoryId });
+      const categoryIds = [category.categoryId];
+      const childCategories = await Category.find({
+        parent: category._id,
+      }).exec();
 
-  // Add conditions to the query dynamically
-  if (minPrice && maxPrice) {
-    query += " WHERE price >= ? AND price <= ?";
-    queryParams.push(parseInt(minPrice), parseInt(maxPrice));
-  } else if (minPrice) {
-    query += " WHERE price >= ?";
-    queryParams.push(parseInt(minPrice));
-  } else if (maxPrice) {
-    query += " WHERE price <= ?";
-    queryParams.push(parseInt(maxPrice));
-  }
+      for (const childCategory of childCategories) {
+        const childIds = await allChildCategoryIds(childCategory._id);
+        categoryIds.push(...childIds);
+      }
 
-  if (search) {
-    query += " WHERE (title LIKE ? OR description LIKE ?)";
-    queryParams.push(`%${search}%`, `%${search}%`);
+      return categoryIds;
+    };
+
+    let query =
+      "SELECT p.product_id, p.title, p.description, p.price, p.image, p.category_id, SUM(i.quantity) AS available_quantity, u.username AS seller FROM product p LEFT JOIN inventory i ON p.product_id = i.product_id JOIN users u ON p.seller_id = u.user_id";
+    const queryParams = [];
+
+    const conditions = [];
+
+    if (category) {
+      const categoryP = await Category.findOne({ categoryId: category });
+      // Get all category IDs based on the provided category and its children
+      const categoryIds = await allChildCategoryIds(categoryP._id);
+      if (categoryIds.length > 0) {
+        // Generate a string of placeholders for the IN clause
+        const placeholders = categoryIds.map(() => "?").join(", ");
+        conditions.push(`p.category_id IN (${placeholders})`);
+        queryParams.push(...categoryIds);
+      }
+    }
+
+    if (minPrice && maxPrice) {
+      conditions.push("p.price BETWEEN ? AND ?");
+      queryParams.push(parseInt(minPrice), parseInt(maxPrice));
+    } else if (minPrice) {
+      conditions.push("p.price >= ?");
+      queryParams.push(parseInt(minPrice));
+    } else if (maxPrice) {
+      conditions.push("p.price <= ?");
+      queryParams.push(parseInt(maxPrice));
+    }
+
+    if (search) {
+      conditions.push("(title LIKE ? OR description LIKE ?)");
+      queryParams.push(`%${search}%`, `%${search}%`);
+    }
+
+    // Combine conditions with 'AND'
+    if (conditions.length > 0) {
+      query += ` WHERE ${conditions.join(" AND ")}`;
+    }
+
     query += " GROUP BY p.product_id, p.title, p.description, p.price, p.image";
-  } else {
-    query += " GROUP BY p.product_id, p.title, p.description, p.price, p.image";
-  }
 
-  // Add ORDER BY clause for sorting
-  if (sortField && (sortOrder === "ASC" || sortOrder === "DESC")) {
-    query += ` ORDER BY ${sortField} ${sortOrder}`;
-  }
+    if (sortField && (sortOrder === "ASC" || sortOrder === "DESC")) {
+      query += ` ORDER BY ${sortField} ${sortOrder}`;
+    }
 
-  db.mysqlConnection.query(query, queryParams, (error, results) => {
-    if (error) {
-      res
-        .status(500)
-        .json({ message: "Error fetching products", error: error.message });
-    } else {
+    // Execute the SQL query
+    db.mysqlConnection.query(query, queryParams, (error, results) => {
+      console.log(query);
+      console.log(queryParams);
+
+      if (error) {
+        throw error;
+      }
+
       const getProductData = async (results) => {
         const productData = [];
 
@@ -113,7 +154,6 @@ const getAllProducts = async (req, res) => {
 
       getProductData(results)
         .then((productData) => {
-          console.log(productData);
           res.status(200).json(productData);
         })
         .catch((error) => {
@@ -122,8 +162,12 @@ const getAllProducts = async (req, res) => {
             .status(500)
             .json({ message: "Error fetching products", error: error.message });
         });
-    }
-  });
+    });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error fetching products", error: error.message });
+  }
 };
 
 const getProduct = async (req, res) => {
@@ -161,7 +205,6 @@ const getProduct = async (req, res) => {
 
       getProductData(results)
         .then((productData) => {
-          console.log(productData);
           res.status(200).json(productData);
         })
         .catch((error) => {
@@ -268,7 +311,6 @@ const placeOrder = async (req, res) => {
     }
 
     const added_time = moment().format("YYYY-MM-DD HH:mm:ss");
-    console.log(added_time);
 
     await queryAsync(
       "INSERT INTO orders (customer_id, order_date, order_status) VALUES (?, ?, ?)",
@@ -279,7 +321,6 @@ const placeOrder = async (req, res) => {
       "SELECT LAST_INSERT_ID() as order_id"
     );
     const orderId = JSON.parse(JSON.stringify(orderIdResult))[0].order_id;
-    console.log(orderId);
 
     for (const cartItem of eligibleProducts) {
       const { productId, quantity } = cartItem;
@@ -336,7 +377,7 @@ const getAllOrders = async (req, res) => {
 const getOrder = async (req, res) => {
   const orderId = req.params.id;
   const customerId = req.session.userid;
-  console.log(customerId);
+
   const query =
     "SELECT oi.product_id, oi.quantity FROM orders o JOIN orderItem oi ON o.order_id = oi.order_id WHERE o.customer_id = ? AND o.order_id = ?";
   db.mysqlConnection.query(query, [customerId, orderId], (error, result) => {
@@ -371,6 +412,7 @@ module.exports = {
   getAllProducts,
   getProduct,
   getCategoryName,
+  getAllCategories,
   getCategoryAttributes,
   getAllOrders,
   getOrder,

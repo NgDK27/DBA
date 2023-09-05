@@ -1,9 +1,8 @@
-const express = require("express");
 const db = require("../dbconnection");
 const util = require("util");
 const bcrypt = require("bcrypt");
 const Category = require("../models/category");
-const session = require("express-session");
+const { query } = require("express");
 
 const registerAdmin = async (req, res) => {
   const { username, email, password } = req.body;
@@ -25,7 +24,6 @@ const registerAdmin = async (req, res) => {
       }
     );
   } catch (error) {
-    console.log(error);
     res.status(500).send("Error registering user");
   }
 };
@@ -167,7 +165,7 @@ const createWarehouse = async (req, res) => {
       total_area_volume: req.body.area,
       available_area: req.body.area,
     };
-    console.log(data);
+
     let result = await db.mysqlConnection.query(
       "INSERT INTO warehouse SET ? ",
       [data],
@@ -182,7 +180,9 @@ const createWarehouse = async (req, res) => {
         }
       }
     );
-  } catch (error) {}
+  } catch (error) {
+    res.status(500).json(error);
+  }
 };
 
 const updateWarehouse = async (req, res) => {
@@ -267,17 +267,16 @@ const deleteWarehouse = async (req, res) => {
                   message: "Error deleting warehouse",
                   error: error.message,
                 });
-              } else {
-                found = true;
-                res.status(200).send("Delete successfully");
               }
             }
           );
         }
       }
 
-      if (!found) {
+      if (found) {
         res.status(403).send("There are products in this warehouse");
+      } else {
+        res.status(200).send("Delete successfully");
       }
     }
   });
@@ -285,7 +284,7 @@ const deleteWarehouse = async (req, res) => {
 
 const getAllWarehouses = async (req, res) => {
   const query =
-    "SELECT w.warehouse_id, SUM(i.quantity) AS total_quantity, w.available_area FROM warehouse w LEFT JOIN inventory i ON w.warehouse_id = i.warehouse_id LEFT JOIN product p ON i.product_id = p.product_id GROUP BY i.warehouse_id";
+    "SELECT w.warehouse_id, w.name, SUM(i.quantity) AS total_quantity, w.available_area FROM warehouse w LEFT JOIN inventory i ON w.warehouse_id = i.warehouse_id LEFT JOIN product p ON i.product_id = p.product_id GROUP BY i.warehouse_id";
   db.mysqlConnection.query(query, (error, result) => {
     if (error) {
       res
