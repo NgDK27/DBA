@@ -64,8 +64,8 @@ const getAllProducts = async (req, res) => {
 
     // Create a function to recursively find all child category IDs
     const allChildCategoryIds = async (categoryId) => {
-      const category = await Category.findById({ categoryId });
-      const categoryIds = [category.category_id];
+      const category = await Category.findOne({ _id: categoryId });
+      const categoryIds = [category.categoryId];
       const childCategories = await Category.find({
         parent: category._id,
       }).exec();
@@ -78,56 +78,56 @@ const getAllProducts = async (req, res) => {
       return categoryIds;
     };
 
-    // Construct the SQL query dynamically
     let query =
       "SELECT p.product_id, p.title, p.description, p.price, p.image, p.category_id, SUM(i.quantity) AS available_quantity, u.username AS seller FROM product p LEFT JOIN inventory i ON p.product_id = i.product_id JOIN users u ON p.seller_id = u.user_id";
     const queryParams = [];
 
-    // Add conditions to the query based on provided parameters
+    const conditions = [];
+
     if (category) {
       const categoryP = await Category.findOne({ categoryId: category });
-
       // Get all category IDs based on the provided category and its children
       const categoryIds = await allChildCategoryIds(categoryP._id);
       if (categoryIds.length > 0) {
-        query += `WHERE p.category_id IN (${categoryIds
-          .map(() => "?")
-          .join(", ")})`;
+        // Generate a string of placeholders for the IN clause
+        const placeholders = categoryIds.map(() => "?").join(", ");
+        conditions.push(`p.category_id IN (${placeholders})`);
         queryParams.push(...categoryIds);
       }
     }
 
-    // Add price conditions
     if (minPrice && maxPrice) {
-      query += " AND p.price BETWEEN ? AND ?";
+      conditions.push("p.price BETWEEN ? AND ?");
       queryParams.push(parseInt(minPrice), parseInt(maxPrice));
     } else if (minPrice) {
-      query += " AND p.price >= ?";
+      conditions.push("p.price >= ?");
       queryParams.push(parseInt(minPrice));
     } else if (maxPrice) {
-      query += " AND p.price <= ?";
+      conditions.push("p.price <= ?");
       queryParams.push(parseInt(maxPrice));
     }
 
-    // Add search condition
     if (search) {
-      query += " WHERE (title LIKE ? OR description LIKE ?)";
+      conditions.push("(title LIKE ? OR description LIKE ?)");
       queryParams.push(`%${search}%`, `%${search}%`);
-      query +=
-        " GROUP BY p.product_id, p.title, p.description, p.price, p.image";
-    } else {
-      query +=
-        " GROUP BY p.product_id, p.title, p.description, p.price, p.image";
     }
 
-    // Add ORDER BY clause for sorting
+    // Combine conditions with 'AND'
+    if (conditions.length > 0) {
+      query += ` WHERE ${conditions.join(" AND ")}`;
+    }
+
+    query += " GROUP BY p.product_id, p.title, p.description, p.price, p.image";
+
     if (sortField && (sortOrder === "ASC" || sortOrder === "DESC")) {
       query += ` ORDER BY ${sortField} ${sortOrder}`;
     }
 
     // Execute the SQL query
     db.mysqlConnection.query(query, queryParams, (error, results) => {
-      console.log(results);
+      console.log(query);
+      console.log(queryParams);
+
       if (error) {
         throw error;
       }
