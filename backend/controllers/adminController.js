@@ -2,6 +2,7 @@ const db = require("../dbconnection");
 const util = require("util");
 const bcrypt = require("bcrypt");
 const Category = require("../models/category");
+const { query } = require("express");
 
 const registerAdmin = async (req, res) => {
   const { username, email, password } = req.body;
@@ -126,6 +127,26 @@ async function hasAssociatedProducts(categoryId) {
     throw error;
   }
 }
+
+// async function allChildCategory(category) {
+//   try {
+//     categoryArray = [];
+//     categoryArray.push(category);
+//     // Check child categories recursively
+//     const cate = await Category.findOne({ categoryId: category }).exec();
+//     const childCategories = await Category.find({
+//       parent: cate._id,
+//     }).exec();
+//     for (const childCategory of childCategories) {
+//       if (childCategory.children) {
+//         await allChildCategory(childCategory.categoryId);
+//       }
+//     }
+//     return categoryArray;
+//   } catch (error) {
+//     throw error;
+//   }
+// }
 
 const deleteCategory = async (req, res) => {
   const categoryId = parseInt(req.params.id);
@@ -266,17 +287,16 @@ const deleteWarehouse = async (req, res) => {
                   message: "Error deleting warehouse",
                   error: error.message,
                 });
-              } else {
-                found = true;
-                res.status(200).send("Delete successfully");
               }
             }
           );
         }
       }
 
-      if (!found) {
+      if (found) {
         res.status(403).send("There are products in this warehouse");
+      } else {
+        res.status(200).send("Delete successfully");
       }
     }
   });

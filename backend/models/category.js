@@ -26,12 +26,16 @@ const categorySchema = new mongoose.Schema({
 categorySchema.pre("save", async function (next) {
   if (!this.categoryId) {
     const count = await mongoose.model("Category").countDocuments();
-    const biggestCateId = await Category.find()
-      .sort({ categoryId: -1 })
-      .limit(1);
+    if (count > 0) {
+      const biggestCateId = await Category.find()
+        .sort({ categoryId: -1 })
+        .limit(1);
 
-    if (biggestCateId[0].categoryId > count) {
-      this.categoryId = biggestCateId[0].categoryId + 1;
+      if (biggestCateId[0].categoryId > count) {
+        this.categoryId = biggestCateId[0].categoryId + 1;
+      } else {
+        this.categoryId = count + 1;
+      }
     } else {
       this.categoryId = count + 1;
     }
