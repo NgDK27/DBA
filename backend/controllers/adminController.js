@@ -128,26 +128,6 @@ async function hasAssociatedProducts(categoryId) {
   }
 }
 
-// async function allChildCategory(category) {
-//   try {
-//     categoryArray = [];
-//     categoryArray.push(category);
-//     // Check child categories recursively
-//     const cate = await Category.findOne({ categoryId: category }).exec();
-//     const childCategories = await Category.find({
-//       parent: cate._id,
-//     }).exec();
-//     for (const childCategory of childCategories) {
-//       if (childCategory.children) {
-//         await allChildCategory(childCategory.categoryId);
-//       }
-//     }
-//     return categoryArray;
-//   } catch (error) {
-//     throw error;
-//   }
-// }
-
 const deleteCategory = async (req, res) => {
   const categoryId = parseInt(req.params.id);
   const checkProduct = await hasAssociatedProducts(categoryId);

@@ -40,6 +40,11 @@ const getCategoryName = async (categoryId) => {
   }
 };
 
+const getAllCategories = async (req, res) => {
+  const categories = await Category.find({});
+  res.status(200).json(categories);
+};
+
 const getCategoryAttributes = async (categoryId, attributes = []) => {
   const category = await Category.findOne({ categoryId: categoryId }).exec();
   if (!category) return attributes;
@@ -407,6 +412,7 @@ module.exports = {
   getAllProducts,
   getProduct,
   getCategoryName,
+  getAllCategories,
   getCategoryAttributes,
   getAllOrders,
   getOrder,
