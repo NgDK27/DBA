@@ -74,18 +74,8 @@ const getAllProducts = async (req, res) => {
     };
 
     // Construct the SQL query dynamically
-    let query = `
-      SELECT
-        p.product_id, p.title, p.description, p.price, p.image, p.category_id,
-        SUM(i.quantity) AS available_quantity, u.username AS seller
-      FROM
-        product p
-      LEFT JOIN
-        inventory i ON p.product_id = i.product_id
-      JOIN
-        users u ON p.seller_id = u.user_id
-      `;
-
+    let query =
+      "SELECT p.product_id, p.title, p.description, p.price, p.image, p.category_id, SUM(i.quantity) AS available_quantity, u.username AS seller FROM product p LEFT JOIN inventory i ON p.product_id = i.product_id JOIN users u ON p.seller_id = u.user_id";
     const queryParams = [];
 
     // Add conditions to the query based on provided parameters
@@ -116,8 +106,13 @@ const getAllProducts = async (req, res) => {
 
     // Add search condition
     if (search) {
-      query += " AND (p.title LIKE ? OR p.description LIKE ?)";
+      query += " WHERE (title LIKE ? OR description LIKE ?)";
       queryParams.push(`%${search}%`, `%${search}%`);
+      query +=
+        " GROUP BY p.product_id, p.title, p.description, p.price, p.image";
+    } else {
+      query +=
+        " GROUP BY p.product_id, p.title, p.description, p.price, p.image";
     }
 
     // Add ORDER BY clause for sorting
