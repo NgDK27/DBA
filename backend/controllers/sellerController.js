@@ -38,7 +38,7 @@ const createProduct = async (req, res) => {
       title: req.body.title,
       description: req.body.description,
       price: req.body.price,
-      image: req.file.filename,
+      image: req.file.buffer.toString("base64"),
       length: req.body.length,
       width: req.body.width,
       height: req.body.height,

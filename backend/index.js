@@ -19,7 +19,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.json());
 app.use(
   cors({
-    origin: "https://localhost",
+    origin: "https://localhost:4200",
     credentials: true,
   })
 );
