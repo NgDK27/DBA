@@ -106,9 +106,17 @@ async function hasAssociatedProducts(categoryId) {
     const childCategories = await Category.find({
       parent: category._id,
     }).exec();
+
     for (const childCategory of childCategories) {
-      if (await hasAssociatedProducts(childCategory.categoryId)) {
+      const checkProduct = db.mysqlConnection.query(
+        "SELECT * FROM product WHERE catagory_id = ?",
+        childCategory.categoryId
+      );
+
+      if (checkProduct) {
         return true; // Child category or its descendants have associated products
+      } else {
+        await hasAssociatedProducts(childCategory.categoryId);
       }
     }
 
