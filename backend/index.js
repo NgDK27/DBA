@@ -19,11 +19,15 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.json());
 app.use(
   cors({
-    origin: "https://localhost:4200",
+    origin: ["https://localhost:4200", "https://localhost"],
     credentials: true,
   })
 );
-app.use(helmet());
+app.use(
+  helmet({
+    crossOriginResourcePolicy: false,
+  })
+);
 app.use(
   session({
     secret: "your_secret_key",

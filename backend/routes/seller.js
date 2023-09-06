@@ -15,12 +15,12 @@ const { checkRole } = require("../middlewares/role");
 const router = express.Router();
 
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "./images");
-  },
+  destination: "./images",
   filename: (req, file, cb) => {
-    console.log(file);
-    cb(null, file.originalname);
+    return cb(
+      null,
+      `${file.fieldname}_${Date.now()}${path.extname(file.originalname)}`
+    );
   },
 });
 

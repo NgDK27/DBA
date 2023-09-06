@@ -2,7 +2,6 @@ const db = require("../dbconnection");
 const util = require("util");
 const bcrypt = require("bcrypt");
 const Category = require("../models/category");
-const { query } = require("express");
 
 const registerAdmin = async (req, res) => {
   const { username, email, password } = req.body;
@@ -102,15 +101,6 @@ const updateCategory = async (req, res) => {
 
 async function hasAssociatedProducts(categoryId) {
   try {
-    const rows = await db.mysqlConnection.query(
-      "SELECT DISTINCT category_id FROM product WHERE category_id = ?",
-      [categoryId]
-    );
-
-    if (rows.length > 0) {
-      return true; // There are associated products in this category
-    }
-
     // Check child categories recursively
     const category = await Category.findOne({ categoryId: categoryId }).exec();
     const childCategories = await Category.find({
@@ -244,42 +234,45 @@ const updateWarehouse = async (req, res) => {
 };
 
 const deleteWarehouse = async (req, res) => {
-  let found = false;
   const name = req.query;
+
   const getDeleteWarehouseQuery =
-    "SELECT * FROM warehouse w LEFT JOIN inventory i ON w.warehouse_id = i.warehouse_id LEFT JOIN product p ON i.product_id = p.product_id WHERE p.product_id IS NULL";
-  db.mysqlConnection.query(getDeleteWarehouseQuery, (error, result) => {
-    if (error) {
-      return res.status(500).json({
-        message: "There are no warehouse without products",
-        error: error.message,
-      });
-    } else {
-      for (const warehouse of result) {
-        if (warehouse.name == JSON.parse(JSON.stringify(name)).name) {
+    "SELECT * FROM warehouse w LEFT JOIN inventory i ON w.warehouse_id = i.warehouse_id WHERE i.product_id IS NULL AND w.name = ?";
+
+  db.mysqlConnection.query(
+    getDeleteWarehouseQuery,
+    [name.name],
+    (error, result) => {
+      if (error) {
+        return res.status(500).json({
+          message: "Error checking for products in the warehouse",
+          error: error.message,
+        });
+      } else {
+        if (result.length == 1) {
+          // No products found, it's safe to delete the warehouse
           const deleteWarehouseQuery = "DELETE FROM warehouse WHERE name = ?";
           db.mysqlConnection.query(
             deleteWarehouseQuery,
-            [JSON.parse(JSON.stringify(name)).name],
+            [name.name],
             (error, result) => {
               if (error) {
                 return res.status(500).json({
                   message: "Error deleting warehouse",
                   error: error.message,
                 });
+              } else {
+                res.status(200).send("Deleted successfully");
               }
             }
           );
+        } else {
+          // Products found in the warehouse
+          res.status(403).send("There are products in this warehouse");
         }
       }
-
-      if (found) {
-        res.status(403).send("There are products in this warehouse");
-      } else {
-        res.status(200).send("Delete successfully");
-      }
     }
-  });
+  );
 };
 
 const getAllWarehouses = async (req, res) => {
@@ -407,6 +400,7 @@ const moveProducts = async (req, res) => {
             [requiredArea, destinationWarehouseId]
           ),
         ]);
+
         // Commit the transaction
         await util.promisify(connection.commit).call(connection);
 

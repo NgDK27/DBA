@@ -1,0 +1,197 @@
+<!-- Breadcrumb Start -->
+<div class="container-fluid">
+    <div class="row px-xl-5">
+        <div class="col-12">
+            <nav class="breadcrumb bg-light mb-30">
+                <a class="breadcrumb-item text-dark" href="#">Home</a>
+                <span class="breadcrumb-item active">Products</span>
+            </nav>
+        </div>
+    </div>
+</div>
+<!-- Breadcrumb End -->
+
+
+<!-- Shop Start -->
+<div class="container-fluid">
+    <div class="row px-xl-5">
+        <!-- Shop Sidebar Start -->
+        <div class="col-lg-3 col-md-4">
+            <!-- Price Start -->
+            <h5 class="section-title position-relative text-uppercase mb-3"><span class="bg-secondary pr-3">
+              Filter by price
+            </span></h5>
+            <div class="bg-light p-4 mb-30">
+                <form>
+                    <div class="custom-control custom-checkbox d-flex align-items-center justify-content-between mb-3">
+                        <input
+                          type="radio"
+                          name="price-filter"
+                          class="custom-control-input"
+                          checked
+                          id="price-all"
+                          (click)="setMinMaxPrice(undefined, undefined)"
+                        >
+                        <label class="custom-control-label" for="price-all">All</label>
+                    </div>
+                    <div class="custom-control custom-checkbox d-flex align-items-center justify-content-between mb-3">
+                        <input
+                          type="radio"
+                          name="price-filter"
+                          class="custom-control-input"
+                          id="price-1"
+                          (click)="setMinMaxPrice(0, 199)"
+                        >
+                        <label class="custom-control-label" for="price-1">$0 - $199</label>
+                    </div>
+                    <div class="custom-control custom-checkbox d-flex align-items-center justify-content-between mb-3">
+                        <input
+                          type="radio"
+                          name="price-filter"
+                          class="custom-control-input"
+                          id="price-2"
+                          (click)="setMinMaxPrice(200, 499)"
+                        >
+                        <label class="custom-control-label" for="price-2">$200 - $499</label>
+                    </div>
+                    <div class="custom-control custom-checkbox d-flex align-items-center justify-content-between mb-3">
+                        <input
+                          type="radio"
+                          name="price-filter"
+                          class="custom-control-input"
+                          id="price-3"
+                          (click)="setMinMaxPrice(500, 799)"
+                        >
+                        <label class="custom-control-label" for="price-3">$500 - $799</label>
+                    </div>
+                    <div class="custom-control custom-checkbox d-flex align-items-center justify-content-between mb-3">
+                        <input
+                          type="radio"
+                          name="price-filter"
+                          class="custom-control-input"
+                          id="price-4"
+                          (click)="setMinMaxPrice(800, 1399)"
+                        >
+                        <label class="custom-control-label" for="price-4">$800 - $1399</label>
+                    </div>
+                    <div class="custom-control custom-checkbox d-flex align-items-center justify-content-between">
+                        <input
+                          type="radio"
+                          name="price-filter"
+                          class="custom-control-input"
+                          id="price-5"
+                          (click)="setMinMaxPrice(1400, undefined)"
+                        >
+                        <label class="custom-control-label" for="price-5">Over 1400$</label>
+                    </div>
+                </form>
+            </div>
+            <!-- Price End -->
+          <h5 class="section-title position-relative text-uppercase mb-3"><span class="bg-secondary pr-3">
+              Filter by Category
+            </span></h5>
+          <div class="bg-light p-4 mb-30 height-600-scroll">
+            <form>
+              <div class="custom-control custom-checkbox d-flex align-items-center justify-content-between mb-3">
+                <input
+                  type="radio"
+                  name="price-filter"
+                  class="custom-control-input"
+                  checked
+                  id="category-all"
+                  (click)="setCategory(undefined)"
+                >
+                <label class="custom-control-label" for="category-all">All</label>
+              </div>
+              <div
+                class="custom-control custom-checkbox d-flex align-items-center justify-content-between mb-3"
+                *ngFor="let category of listCategories"
+              >
+                <input
+                  type="radio"
+                  name="price-filter"
+                  class="custom-control-input"
+                  id="{{category._id}}"
+                  (click)="setCategory(category.categoryId)"
+                >
+                <label class="custom-control-label" for="{{category._id}}">{{category.name}}</label>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Shop Sidebar End -->
+
+
+        <!-- Shop Product Start -->
+        <div class="col-lg-9 col-md-8">
+            <div class="row pb-3">
+                <div class="col-12 pb-1">
+                    <div class="d-flex align-items-center justify-content-between mb-4">
+                        <div class="ml-2">
+                            <div class="btn-group">
+                                <button
+                                  type="button"
+                                  class="btn btn-sm btn-light dropdown-toggle pd-8-4"
+                                  data-toggle="dropdown"
+                                >Sorting</button>
+                                <div class="dropdown-menu dropdown-menu-right">
+                                    <a class="dropdown-item" (click)="setSortField('price', 'DESC')">price desc</a>
+                                    <a class="dropdown-item" (click)="setSortField('price', 'ASC')">price asc</a>
+                                  <a class="dropdown-item" (click)="setSortField('title', 'DESC')">title desc</a>
+                                  <a class="dropdown-item" (click)="setSortField('title', 'ASC')">title asc</a>
+                                  <a class="dropdown-item" (click)="setSortField('added_time', 'DESC')">added time desc</a>
+                                  <a class="dropdown-item" (click)="setSortField('added_time', 'ASC')">added time asc</a>
+                                </div>
+                            </div>
+                            <div class="btn-group ml-2">
+                              <input type="text" class="form-control" placeholder="Search for products" [(ngModel)]="filterValue.search">
+                            </div>
+                            <div class="btn-group ml-2">
+                              <button type="button" class="btn btn-sm btn-light pd-8-16" (click)="changeFilter()">
+                                <i class="fas fa-search"></i>
+                              </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6 col-sm-6 pb-1 cursor-pointer" *ngFor="let product of displayData" (click)="onProductClick(product)">
+                    <div class="product-item bg-light mb-4" >
+                        <div class="product-img position-relative overflow-hidden">
+                            <img class="img-fluid w-100" ngSrc="{{'https://localhost/images/' + product.image}}" alt=""
+                                 height="500" width="500">
+<!--                          <img class="img-fluid w-100" ngSrc="../../../../assets/user/img/product-1.jpg" alt=""-->
+<!--                               height="500" width="500">-->
+                        </div>
+                        <div class="text-center py-4">
+                            <span class="h6 text-decoration-none text-truncate">{{product.title}}</span>
+                            <div class="d-flex align-items-center justify-content-center mt-2">
+                                <h5>${{product.price}}</h5>
+                            </div>
+                            <div class="d-flex align-content-between justify-content-between mb-1">
+                                <div class="ml-4">
+                                  <small class="text-primary mr-1">Available :</small>
+                                  <small class="text-primary">{{product.quantity}}</small>
+                                </div>
+                              <div class="mr-4">
+                                <small class="text-primary mr-1">Seller :</small>
+                                <small class="text-primary">{{product.seller}}</small>
+                              </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 align-items-center justify-content-center">
+                  <nz-pagination
+                    [nzPageSize]="productPerPage"
+                    [nzPageIndex]="pageIndex"
+                    [nzTotal]="listOfData.length"
+                    (nzPageIndexChange)="changePageIndex($event)"
+                  ></nz-pagination>
+                </div>
+            </div>
+        </div>
+        <!-- Shop Product End -->
+    </div>
+</div>
+<!-- Shop End -->

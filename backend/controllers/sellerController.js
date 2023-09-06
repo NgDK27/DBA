@@ -2,6 +2,7 @@ const path = require("path");
 const moment = require("moment");
 const db = require("../dbconnection");
 const bcrypt = require("bcrypt");
+const fs = require("fs");
 const {
   getCategoryName,
   getCategoryAttributes,
@@ -76,7 +77,7 @@ const getAllProducts = async (req, res) => {
     if (error) {
       return res
         .status(500)
-        .json({ message: "Error deleting category", error: error.message });
+        .json({ message: "Error fetching products", error: error.message });
     } else {
       const getProductData = async (results) => {
         const productData = [];
@@ -214,10 +215,10 @@ const deleteProduct = (req, res) => {
 
   // Fetch the image filename before deleting the product
   const getImageFilenameQuery =
-    "SELECT image FROM product WHERE product_id = ? AND seller_id = ?";
+    "SELECT image FROM product WHERE product_id = ?";
   db.mysqlConnection.query(
     getImageFilenameQuery,
-    [productId, req.session.userid],
+    [productId],
     (error, result) => {
       if (error) {
         return res
@@ -232,11 +233,10 @@ const deleteProduct = (req, res) => {
       const imageFilename = result[0].image;
 
       // Delete product
-      const deleteQuery =
-        "DELETE FROM product WHERE product_id = ? AND seller_id = ?";
+      const deleteQuery = "DELETE FROM product WHERE product_id = ?";
       db.mysqlConnection.query(
         deleteQuery,
-        [productId, req.session.userid],
+        [productId],
         (deleteError, deleteResult) => {
           if (deleteError) {
             return res.status(500).json({

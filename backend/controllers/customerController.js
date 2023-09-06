@@ -125,9 +125,6 @@ const getAllProducts = async (req, res) => {
 
     // Execute the SQL query
     db.mysqlConnection.query(query, queryParams, (error, results) => {
-      console.log(query);
-      console.log(queryParams);
-
       if (error) {
         throw error;
       }
@@ -217,7 +214,7 @@ const getProduct = async (req, res) => {
   });
 };
 
-function checkInvenQuantity(productId) {
+async function checkInvenQuantity(productId) {
   const query =
     "SELECT SUM(quantity) AS quantity FROM inventory WHERE product_id = ?";
   const results = new Promise((resolve, reject) => {

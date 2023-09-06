@@ -1,0 +1,107 @@
+<!-- Topbar Start -->
+<div class="container-fluid">
+  <div class="row align-items-center bg-light py-3 px-xl-5 d-none d-lg-flex">
+    <div class="col-lg-4">
+      <a href="" class="text-decoration-none">
+        <span class="h1 text-uppercase text-primary bg-dark px-2">DK</span>
+        <span class="h1 text-uppercase text-dark bg-primary px-2 ml-n1"
+          >E-commerce</span
+        >
+      </a>
+    </div>
+    <div class="col-lg-4 col-6 text-left"></div>
+    <div class="col-lg-4 col-6 text-right">
+      <p class="m-0">Dịch vụ khách hàng</p>
+      <h5 class="m-0">068686868</h5>
+    </div>
+  </div>
+</div>
+<!-- Topbar End -->
+
+<!-- Navbar Start -->
+<div class="container-fluid bg-dark mb-30">
+  <div class="row px-xl-5">
+    <div class="col-lg-9">
+      <nav
+        class="navbar navbar-expand-lg bg-dark navbar-dark py-3 py-lg-0 px-0"
+      >
+        <a href="" class="text-decoration-none d-block d-lg-none">
+          <span class="h1 text-uppercase text-dark bg-light px-2">Multi</span>
+          <span class="h1 text-uppercase text-light bg-primary px-2 ml-n1"
+            >Shop</span
+          >
+        </a>
+        <button
+          type="button"
+          class="navbar-toggler"
+          data-toggle="collapse"
+          data-target="#navbarCollapse"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div
+          class="collapse navbar-collapse justify-content-between"
+          id="navbarCollapse"
+        >
+          <div class="navbar-nav mr-auto py-0">
+            <a
+              [routerLink]="'home'"
+              [routerLinkActive]="['active']"
+              class="nav-item nav-link"
+              >Home</a
+            >
+            <a
+              [routerLink]="'shop'"
+              [routerLinkActive]="['active']"
+              class="nav-item nav-link"
+              >Products</a
+            >
+            <a
+              [routerLink]="'contact'"
+              [routerLinkActive]="['active']"
+              class="nav-item nav-link"
+              >Contact</a
+            >
+          </div>
+          <div class="navbar-nav ml-auto py-0 d-none d-lg-block">
+            <a class="btn px-0 ml-3" (click)="navigateToCart()">
+              <i class="fas fa-shopping-cart text-primary"></i>
+            </a>
+            <a class="btn px-0 ml-4" (click)="navigateToOrder()">
+              <i class="fas fa-shopping-bag text-primary"></i>
+            </a>
+            <div class="nav-item dropdown btn px-0 ml-3">
+              <a
+                href="#"
+                class="nav-link dropdown-toggle"
+                data-toggle="dropdown"
+                ><i class="fas fa-user text-primary"></i
+              ></a>
+              <div
+                class="dropdown-menu bg-primary rounded-0 border-0 m-0"
+                style="left: -62px"
+              >
+                <a
+                  *ngIf="!getRole()"
+                  class="dropdown-item"
+                  [routerLink]="'/login'"
+                  >Log in</a
+                >
+                <a
+                  *ngIf="!getRole()"
+                  class="dropdown-item"
+                  [routerLink]="'/register'"
+                  >Register</a
+                >
+                <a *ngIf="getRole()" class="dropdown-item" (click)="logout()"
+                  >Log out</a
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </div>
+  </div>
+</div>
+<!-- Navbar End -->

@@ -46,11 +46,11 @@ CREATE TABLE warehouse (
 
 CREATE TABLE inventory (
   inventory_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
-  product_id INT NOT NULL,
-  warehouse_id INT NOT NULL,
+  product_id INT,
+  warehouse_id INT,
   quantity INT NOT NULL,
-  FOREIGN KEY (warehouse_id) REFERENCES warehouse(warehouse_id),
-  FOREIGN KEY (product_id) REFERENCES product(product_id)
+  FOREIGN KEY (warehouse_id) REFERENCES warehouse(warehouse_id) ON DELETE SET NULL,
+  FOREIGN KEY (product_id) REFERENCES product(product_id) ON DELETE SET NULL
 );
 
 CREATE TABLE orders (
@@ -64,12 +64,12 @@ CREATE TABLE orders (
 CREATE TABLE orderItem (
   order_item_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
   order_id INT NOT NULL,
-  product_id INT NOT NULL,
+  product_id INT,
   quantity INT NOT NULL,
-  warehouse_id INT NOT NULL,
+  warehouse_id INT,
   FOREIGN KEY (order_id) REFERENCES orders(order_id),
-  FOREIGN KEY (product_id) REFERENCES product(product_id),
-  FOREIGN KEY (warehouse_id) REFERENCES warehouse(warehouse_id)
+  FOREIGN KEY (product_id) REFERENCES product(product_id) ON DELETE SET NULL,
+  FOREIGN KEY (warehouse_id) REFERENCES warehouse(warehouse_id) ON DELETE SET NULL
 );
 
 
