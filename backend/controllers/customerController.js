@@ -51,7 +51,7 @@ const getCategoryAttributes = async (categoryId, attributes = []) => {
 
   attributes = [...attributes, ...category.attributes];
   if (category.parent) {
-    return getCategoryAttributes(category.parent, attributes);
+    return getCategoryAttributes(category.parent.categoryId, attributes);
   }
 
   return attributes;
