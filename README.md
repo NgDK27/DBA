@@ -63,27 +63,27 @@ get: /getProduct/:id
 post: /sendInbound
 
 Category in mongodb:
-categoryId: {
-type: Number,
-unique: true,
-},
-name: {
-type: String,
-},
-parent: {
-type: mongoose.Schema.Types.ObjectId,
-ref: "Category",
-default: null,
-},
-children: [{ type: mongoose.Schema.Types.ObjectId, ref: "Category" }],
-attributes: [
-{
-key: String,
-value: mongoose.Schema.Types.Mixed,
-},
-],
-
-4 categories rn: 1:clothes, 2:food, 3:books, 4:electronics (nothing yet the above is schema)
+const categorySchema = new mongoose.Schema({
+  categoryId: {
+    type: Number,
+    unique: true,
+  },
+  name: {
+    type: String,
+  },
+  parent: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Category",
+    default: null,
+  },
+  children: [{ type: mongoose.Schema.Types.ObjectId, ref: "Category" }],
+  attributes: [
+    {
+      key: String,
+      value: mongoose.Schema.Types.Mixed,
+    },
+  ],
+});
 
 openssl genpkey -algorithm RSA -out private.key
 
