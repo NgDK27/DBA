@@ -79,7 +79,7 @@ const getAllProducts = async (req, res) => {
     };
 
     let query =
-      "SELECT p.product_id, p.title, p.description, p.price, p.image, p.category_id, SUM(i.quantity) AS available_quantity, u.username AS seller FROM product p LEFT JOIN inventory i ON p.product_id = i.product_id JOIN users u ON p.seller_id = u.user_id";
+      "SELECT p.product_id, p.title, p.description, p.price, p.image, p.category_id, COALESCE(SUM(i.quantity), 0) AS available_quantity, u.username AS seller FROM product p LEFT JOIN inventory i ON p.product_id = i.product_id JOIN users u ON p.seller_id = u.user_id";
     const queryParams = [];
 
     const conditions = [];
@@ -91,7 +91,7 @@ const getAllProducts = async (req, res) => {
       if (categoryIds.length > 0) {
         // Generate a string of placeholders for the IN clause
         const placeholders = categoryIds.map(() => "?").join(", ");
-        conditions.push(`p.category_id EXISTS (${placeholders})`);
+        conditions.push(`p.category_id IN (${placeholders})`);
         queryParams.push(...categoryIds);
       }
     }
@@ -117,7 +117,8 @@ const getAllProducts = async (req, res) => {
       query += ` WHERE ${conditions.join(" AND ")}`;
     }
 
-    query += " GROUP BY p.product_id, p.title, p.description, p.price, p.image";
+    query +=
+      " GROUP BY p.product_id, p.title, p.description, p.price, p.image, p.category_id, u.username";
 
     if (sortField && (sortOrder === "ASC" || sortOrder === "DESC")) {
       query += ` ORDER BY ${sortField} ${sortOrder}`;
