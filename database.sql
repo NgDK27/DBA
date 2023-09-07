@@ -169,6 +169,7 @@ BEGIN
       END IF;
       
     END WHILE;
+    DELETE FROM inventory WHERE quantity = 0;
   END IF;
 END //
 
@@ -234,6 +235,7 @@ BEGIN
     END IF;
 
   END WHILE;
+ 
 
 END //
 
@@ -306,6 +308,7 @@ BEGIN
   END WHILE;
   
   CLOSE cur;
+  DELETE FROM inventory WHERE quantity = 0;
   
 END //
 

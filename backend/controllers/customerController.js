@@ -91,7 +91,7 @@ const getAllProducts = async (req, res) => {
       if (categoryIds.length > 0) {
         // Generate a string of placeholders for the IN clause
         const placeholders = categoryIds.map(() => "?").join(", ");
-        conditions.push(`p.category_id IN (${placeholders})`);
+        conditions.push(`p.category_id EXISTS (${placeholders})`);
         queryParams.push(...categoryIds);
       }
     }

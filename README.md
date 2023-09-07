@@ -2,6 +2,8 @@ post: /login
 
 get: /logout
 
+get: /images/:id
+
 customer:
 
 post: /customers/register
@@ -64,25 +66,25 @@ post: /sendInbound
 
 Category in mongodb:
 const categorySchema = new mongoose.Schema({
-  categoryId: {
-    type: Number,
-    unique: true,
-  },
-  name: {
-    type: String,
-  },
-  parent: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Category",
-    default: null,
-  },
-  children: [{ type: mongoose.Schema.Types.ObjectId, ref: "Category" }],
-  attributes: [
-    {
-      key: String,
-      value: mongoose.Schema.Types.Mixed,
-    },
-  ],
+categoryId: {
+type: Number,
+unique: true,
+},
+name: {
+type: String,
+},
+parent: {
+type: mongoose.Schema.Types.ObjectId,
+ref: "Category",
+default: null,
+},
+children: [{ type: mongoose.Schema.Types.ObjectId, ref: "Category" }],
+attributes: [
+{
+key: String,
+value: mongoose.Schema.Types.Mixed,
+},
+],
 });
 
 openssl genpkey -algorithm RSA -out private.key

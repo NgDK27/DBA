@@ -407,6 +407,7 @@ const moveProducts = async (req, res) => {
             "UPDATE warehouse SET available_area = available_area - ? WHERE warehouse_id = ?",
             [requiredArea, destinationWarehouseId]
           ),
+          queryAsync("DELETE FROM inventory WHERE quantity = 0"),
         ]);
 
         // Commit the transaction
