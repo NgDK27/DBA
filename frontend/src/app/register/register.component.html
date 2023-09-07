@@ -55,7 +55,9 @@
 
       <nz-form-item nz-row class="register-area">
         <nz-form-control [nzSpan]="14" [nzOffset]="6">
-          <button nz-button nzType="primary">Register</button>
+          <div>
+            <button nz-button nzType="primary">Register</button><span class="ml-2">Or <a [routerLink]="'/login'">Login</a></span>
+          </div>
         </nz-form-control>
       </nz-form-item>
     </form>

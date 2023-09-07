@@ -10,10 +10,11 @@ import { ShopUserComponent } from './user-module/components/shop-user/shop-user.
 import {LoginComponent} from "./login/login.component";
 import {RegisterComponent} from "./register/register.component";
 import {OrderUserComponent} from "./user-module/components/order-user/order-user.component";
+import {WelcomeComponent} from "./welcome/welcome.component";
 
 const routes: Routes = [
   {
-    path: '', redirectTo: 'user/login', pathMatch: 'full',
+    path: '', component: WelcomeComponent
   },
   {
     path: 'user',

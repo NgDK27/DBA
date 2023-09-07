@@ -3,57 +3,107 @@
 </div>
 <nz-table #basicTable [nzData]="listOfData">
   <thead>
-  <tr>
-    <th>ID</th>
-    <th>Name</th>
-    <th>Total Quantity</th>
-    <th>Available area</th>
-    <th>Action</th>
-  </tr>
+    <tr>
+      <th>ID</th>
+      <th>Name</th>
+      <th>Total Quantity</th>
+      <th>Available area</th>
+      <th>Action</th>
+    </tr>
   </thead>
   <tbody>
-  <tr *ngFor="let data of basicTable.data">
-    <td>{{ data.warehouse_id }}</td>
-    <td>{{ data.name }}</td>
-    <td>{{ data.total_quantity }}</td>
-    <td>{{ data.available_area }}</td>
-    <td>
-      <button nz-button nzType="text" (click)="openMove(data)">Move</button>
-      <button nz-button nzType="text" (click)="openDetail(data)">Detail</button>
-      <nz-divider nzType="vertical"></nz-divider>
-      <button nz-button nzType="text" (click)="openUpdate(data)">Update</button>
-      <nz-divider nzType="vertical"></nz-divider>
-      <button nz-button nzType="text" (click)="deleteWarehouse(data)">Delete</button>
-    </td>
-  </tr>
+    <tr *ngFor="let data of basicTable.data">
+      <td>{{ data.warehouse_id }}</td>
+      <td>{{ data.name }}</td>
+      <td>{{ data.total_quantity }}</td>
+      <td>{{ data.available_area }}</td>
+      <td>
+        <button nz-button nzType="text" (click)="openMove(data)">Move</button>
+        <button nz-button nzType="text" (click)="openDetail(data)">
+          Detail
+        </button>
+        <nz-divider nzType="vertical"></nz-divider>
+        <button nz-button nzType="text" (click)="openUpdate(data)">
+          Update
+        </button>
+        <nz-divider nzType="vertical"></nz-divider>
+        <button nz-button nzType="text" (click)="deleteWarehouse(data)">
+          Delete
+        </button>
+      </td>
+    </tr>
   </tbody>
 </nz-table>
 
-<nz-modal [(nzVisible)]="moveVisible" nzTitle="Move Product" (nzOnCancel)="closeMove()">
+<nz-modal
+  [(nzVisible)]="moveVisible"
+  nzTitle="Move Product"
+  (nzOnCancel)="closeMove()"
+>
   <div *nzModalContent>
     <form nz-form [formGroup]="moveProductForm" (ngSubmit)="submitMove()">
       <nz-form-item>
-        <nz-form-label [nzSm]="6" [nzXs]="24" nzRequired nzFor="from">From</nz-form-label>
-        <nz-form-control [nzSm]="14" [nzXs]="24" nzErrorTip="Please input source warehouse ID!">
-          <input type="number" nz-input formControlName="from" id="from" [disabled]="true"/>
+        <nz-form-label [nzSm]="6" [nzXs]="24" nzRequired nzFor="from"
+          >From</nz-form-label
+        >
+        <nz-form-control
+          [nzSm]="14"
+          [nzXs]="24"
+          nzErrorTip="Please input source warehouse ID!"
+        >
+          <input
+            type="number"
+            nz-input
+            formControlName="from"
+            id="from"
+            [disabled]="true"
+          />
         </nz-form-control>
       </nz-form-item>
       <nz-form-item>
-        <nz-form-label [nzSm]="6" [nzXs]="24" nzRequired nzFor="to">To</nz-form-label>
-        <nz-form-control [nzSm]="14" [nzXs]="24" nzErrorTip="Please input destination warehouse ID!">
+        <nz-form-label [nzSm]="6" [nzXs]="24" nzRequired nzFor="to"
+          >To</nz-form-label
+        >
+        <nz-form-control
+          [nzSm]="14"
+          [nzXs]="24"
+          nzErrorTip="Please input destination warehouse ID!"
+        >
           <input nz-input type="number" formControlName="to" id="to" />
         </nz-form-control>
       </nz-form-item>
       <nz-form-item>
-        <nz-form-label [nzSm]="6" [nzXs]="24" nzRequired nzFor="product_id">Product ID</nz-form-label>
-        <nz-form-control [nzSm]="14" [nzXs]="24" nzErrorTip="Please input the product ID!">
-          <input nz-input type="number" formControlName="productId" id="product_id" />
+        <nz-form-label [nzSm]="6" [nzXs]="24" nzRequired nzFor="product_id"
+          >Product ID</nz-form-label
+        >
+        <nz-form-control
+          [nzSm]="14"
+          [nzXs]="24"
+          nzErrorTip="Please input the product ID!"
+        >
+          <input
+            nz-input
+            type="number"
+            formControlName="productId"
+            id="product_id"
+          />
         </nz-form-control>
       </nz-form-item>
       <nz-form-item>
-        <nz-form-label [nzSm]="6" [nzXs]="24" nzRequired nzFor="quantity">Quantity</nz-form-label>
-        <nz-form-control [nzSm]="14" [nzXs]="24" nzErrorTip="Please input the quantity!">
-          <input nz-input type="number" formControlName="quantity" id="quantity" />
+        <nz-form-label [nzSm]="6" [nzXs]="24" nzRequired nzFor="quantity"
+          >Quantity</nz-form-label
+        >
+        <nz-form-control
+          [nzSm]="14"
+          [nzXs]="24"
+          nzErrorTip="Please input the quantity!"
+        >
+          <input
+            nz-input
+            type="number"
+            formControlName="quantity"
+            id="quantity"
+          />
         </nz-form-control>
       </nz-form-item>
     </form>
@@ -64,23 +114,27 @@
   </div>
 </nz-modal>
 
-<nz-modal [(nzVisible)]="detailVisible" nzTitle="Detail Warehouse" (nzOnCancel)="closeDetail()">
+<nz-modal
+  [(nzVisible)]="detailVisible"
+  nzTitle="Detail Warehouse"
+  (nzOnCancel)="closeDetail()"
+>
   <div *nzModalContent>
-    <h5>available area : {{getAvailableArea()}}</h5>
+    <h5>available area : {{ getAvailableArea() }}</h5>
     <nz-table #detail [nzData]="getWare()">
       <thead>
-      <tr>
-        <th>Product ID</th>
-        <th>Total Quantity</th>
-        <th>Occupied Area</th>
-      </tr>
+        <tr>
+          <th>Product ID</th>
+          <th>Total Quantity</th>
+          <th>Occupied Area</th>
+        </tr>
       </thead>
       <tbody>
-      <tr *ngFor="let data of detail.data">
-        <td>{{ data.product_id }}</td>
-        <td>{{ data.total_quantity }}</td>
-        <td>{{ data.occupied_area }}</td>
-      </tr>
+        <tr *ngFor="let data of detail.data">
+          <td>{{ data.product_id }}</td>
+          <td>{{ data.total_quantity }}</td>
+          <td>{{ data.occupied_area }}</td>
+        </tr>
       </tbody>
     </nz-table>
   </div>
@@ -89,48 +143,88 @@
   </div>
 </nz-modal>
 
-<nz-modal [(nzVisible)]="addNewVisible" [nzTitle]="isUpdating ? 'Update Warehouse' : 'Add new Warehouse'" (nzOnCancel)="handleCancel()">
+<nz-modal
+  [(nzVisible)]="addNewVisible"
+  [nzTitle]="isUpdating ? 'Update Warehouse' : 'Add new Warehouse'"
+  (nzOnCancel)="handleCancel()"
+>
   <div *nzModalContent>
     <form nz-form [formGroup]="validateForm" (ngSubmit)="handleOk()">
       <nz-form-item>
-        <nz-form-label [nzSm]="6" [nzXs]="24" nzRequired nzFor="name">Name</nz-form-label>
-        <nz-form-control [nzSm]="14" [nzXs]="24" nzErrorTip="Please input the name!">
+        <nz-form-label [nzSm]="6" [nzXs]="24" nzFor="name">Name</nz-form-label>
+        <nz-form-control
+          [nzSm]="14"
+          [nzXs]="24"
+          nzErrorTip="Please input the name!"
+        >
           <input nz-input formControlName="name" id="name" />
         </nz-form-control>
       </nz-form-item>
       <nz-form-item>
-        <nz-form-label [nzSm]="6" [nzXs]="24" nzRequired nzFor="province">Province</nz-form-label>
-        <nz-form-control [nzSm]="14" [nzXs]="24" nzErrorTip="Please input the province!">
+        <nz-form-label [nzSm]="6" [nzXs]="24" nzFor="province"
+          >Province</nz-form-label
+        >
+        <nz-form-control
+          [nzSm]="14"
+          [nzXs]="24"
+          nzErrorTip="Please input the province!"
+        >
           <input nz-input formControlName="province" id="province" />
         </nz-form-control>
       </nz-form-item>
       <nz-form-item>
-        <nz-form-label [nzSm]="6" [nzXs]="24" nzRequired nzFor="city">City</nz-form-label>
-        <nz-form-control [nzSm]="14" [nzXs]="24" nzErrorTip="Please input the city!">
+        <nz-form-label [nzSm]="6" [nzXs]="24" nzFor="city">City</nz-form-label>
+        <nz-form-control
+          [nzSm]="14"
+          [nzXs]="24"
+          nzErrorTip="Please input the city!"
+        >
           <input nz-input formControlName="city" id="city" />
         </nz-form-control>
       </nz-form-item>
       <nz-form-item>
-        <nz-form-label [nzSm]="6" [nzXs]="24" nzRequired nzFor="district">District</nz-form-label>
-        <nz-form-control [nzSm]="14" [nzXs]="24" nzErrorTip="Please input the district!">
+        <nz-form-label [nzSm]="6" [nzXs]="24" nzFor="district"
+          >District</nz-form-label
+        >
+        <nz-form-control
+          [nzSm]="14"
+          [nzXs]="24"
+          nzErrorTip="Please input the district!"
+        >
           <input nz-input formControlName="district" id="district" />
         </nz-form-control>
       </nz-form-item>
       <nz-form-item>
-        <nz-form-label [nzSm]="6" [nzXs]="24" nzRequired nzFor="street">Street</nz-form-label>
-        <nz-form-control [nzSm]="14" [nzXs]="24" nzErrorTip="Please input the street!">
+        <nz-form-label [nzSm]="6" [nzXs]="24" nzFor="street"
+          >Street</nz-form-label
+        >
+        <nz-form-control
+          [nzSm]="14"
+          [nzXs]="24"
+          nzErrorTip="Please input the street!"
+        >
           <input nz-input formControlName="street" id="street" />
         </nz-form-control>
       </nz-form-item>
       <nz-form-item>
-        <nz-form-label [nzSm]="6" [nzXs]="24" nzRequired nzFor="number">Number</nz-form-label>
-        <nz-form-control [nzSm]="14" [nzXs]="24" nzErrorTip="Please input the number!">
+        <nz-form-label [nzSm]="6" [nzXs]="24" nzFor="number"
+          >Number</nz-form-label
+        >
+        <nz-form-control
+          [nzSm]="14"
+          [nzXs]="24"
+          nzErrorTip="Please input the number!"
+        >
           <input nz-input type="number" formControlName="number" id="number" />
         </nz-form-control>
       </nz-form-item>
       <nz-form-item *ngIf="!isUpdating">
-        <nz-form-label [nzSm]="6" [nzXs]="24" nzRequired nzFor="area">Area</nz-form-label>
-        <nz-form-control [nzSm]="14" [nzXs]="24" nzErrorTip="Please input the area!">
+        <nz-form-label [nzSm]="6" [nzXs]="24" nzFor="area">Area</nz-form-label>
+        <nz-form-control
+          [nzSm]="14"
+          [nzXs]="24"
+          nzErrorTip="Please input the area!"
+        >
           <input nz-input type="number" formControlName="area" id="area" />
         </nz-form-control>
       </nz-form-item>

@@ -21,12 +21,15 @@ export class CategoriesComponent implements OnInit {
 
   listOfData: Category[] = [];
   categorySelected !: Category;
+  categoryDetail !: Category;
 
   validateForm!: UntypedFormGroup;
   listOfControl: Array<{ id: number; key: string; value: string  }> = [];
 
   addNewVisible = false;
   isUpdating = false;
+
+  isDetail = false;
 
   constructor(
     private fb: UntypedFormBuilder,
@@ -52,6 +55,20 @@ export class CategoriesComponent implements OnInit {
         console.log(error)
       }
     })
+  }
+
+  loadCategoryDetail() {
+    if (this.categorySelected.categoryId) {
+
+      this.adminService.getCategory(this.categorySelected.categoryId).subscribe({
+        next: (data) => {
+          this.categoryDetail = data;
+        },
+        error: err => {
+          console.log(err);
+        }
+      })
+    }
   }
 
   removeField(i: { id: number; key: string; value: string }, e: MouseEvent): void {
@@ -87,6 +104,16 @@ export class CategoriesComponent implements OnInit {
       this.listOfControl[index - 1].value,
       new UntypedFormControl(null, Validators.required)
     )
+  }
+
+  clickDetail(category : Category) {
+    this.categorySelected = category;
+    this.isDetail = true;
+    this.loadCategoryDetail();
+  }
+
+  closeDetail() {
+    this.isDetail = false;
   }
 
   addNew() {
@@ -184,6 +211,7 @@ export class CategoriesComponent implements OnInit {
       },
       error: (err) => {
         console.log(err);
+        this.notification.create("error", "Notification", "Delete failed");
       }
     })
   }

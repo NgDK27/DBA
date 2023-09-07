@@ -18,6 +18,12 @@ export class AdminService {
     })
   }
 
+  getCategory(id : number) {
+    return this.http.get<Category>(`https://localhost/admins/categories/${id}`, {
+      withCredentials: true
+    })
+  }
+
   createNewCategory(name: string, parentName: string, attributes: {
     key: string,
     value: string

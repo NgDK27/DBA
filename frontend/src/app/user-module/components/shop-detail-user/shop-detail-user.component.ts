@@ -3,6 +3,7 @@ import {ProductDetail} from "../../../models/product-detail.model";
 import {ActivatedRoute, Router} from "@angular/router";
 import {CustomerService} from "../../../services/customer.service";
 import {CartService} from "../../../services/cart.service";
+import {NzNotificationService} from "ng-zorro-antd/notification";
 
 @Component({
   selector: 'app-shop-detail-user',
@@ -17,6 +18,7 @@ export class ShopDetailUserComponent implements OnInit {
   constructor(
     private routerActivated : ActivatedRoute,
     private router : Router,
+    private notification : NzNotificationService,
     private customerService: CustomerService,
     private cartService: CartService
   ) { }
@@ -48,6 +50,10 @@ export class ShopDetailUserComponent implements OnInit {
     if (this.numberOfProduct == 0) {
       return;
     }
+    if (this.numberOfProduct > (this.productDetail.quantity || 0)) {
+      this.notification.create("warning", "Product", "Product is not enough");
+      return;
+    }
     if (this.productDetail.product_id) {
       this.customerService.addToCart(this.productDetail.product_id, this.numberOfProduct).subscribe({
         next: (data) => {
@@ -57,6 +63,7 @@ export class ShopDetailUserComponent implements OnInit {
         },
         error: (err) => {
           console.log(err)
+
         }
       })
     }

@@ -18,6 +18,8 @@
     <td>{{data.category}}</td>
     <td>{{ data.price }}</td>
     <td>
+      <button nz-button nzType="text" (click)="handleDetailClick(data)">Detail</button>
+      <nz-divider nzType="vertical"></nz-divider>
       <button nz-button nzType="text" (click)="handleImportClick(data)">Import</button>
       <nz-divider nzType="vertical"></nz-divider>
       <button nz-button nzType="text" (click)="handleUpdateClick(data)">Update</button>
@@ -27,6 +29,18 @@
   </tr>
   </tbody>
 </nz-table>
+
+<nz-modal
+  nzTitle="Product Detail"
+  [(nzVisible)]="isDetail"
+  (nzOnCancel)="closeDetail()">
+  <div *nzModalContent>
+    <p>{{productDetail | json}}</p>
+  </div>
+  <div *nzModalFooter>
+    <button nz-button nzType="default" (click)="closeDetail()">Close</button>
+  </div>
+</nz-modal>
 
 <nz-modal [(nzVisible)]="importQuantityVisible" nzTitle="Send In Bound" (nzOnCancel)="closeImport()">
   <div *nzModalContent>

@@ -21,6 +21,10 @@
       <td>{{ data.name }}</td>
       <td>{{ mapContent(data) }}</td>
       <td>
+        <button nz-button nzType="text" (click)="clickDetail(data)">
+          Detail
+        </button>
+        <nz-divider nzType="vertical"></nz-divider>
         <button nz-button nzType="text" (click)="handleUpdateClick(data)">
           Update
         </button>
@@ -32,6 +36,18 @@
     </tr>
   </tbody>
 </nz-table>
+
+<nz-modal
+  [nzTitle]="'Category Detail'"
+  [(nzVisible)]="isDetail"
+  (nzOnCancel)="closeDetail()">
+  <div *nzModalContent>
+    <p>{{categoryDetail | json}}</p>
+  </div>
+  <div *nzModalFooter>
+    <button nz-button nzType="default" (click)="closeDetail()">Close</button>
+  </div>
+</nz-modal>
 
 <nz-modal
   [(nzVisible)]="addNewVisible"

@@ -3,6 +3,7 @@ import {UntypedFormBuilder, UntypedFormGroup, Validators} from "@angular/forms";
 import {UserService} from "../services/user.service";
 import {error} from "@ant-design/icons-angular";
 import {Route, Router} from "@angular/router";
+import {NzNotificationService} from "ng-zorro-antd/notification";
 
 @Component({
   selector: 'app-login',
@@ -17,6 +18,7 @@ export class LoginComponent implements OnInit {
       console.log('submit', this.validateForm.value);
       this.userService.login(this.validateForm.value.username, this.validateForm.value.password).subscribe({
         next: (data) => {
+          console.log(data)
           const role = data.split(" ");
           if (role[1] === "warehouse_admin") {
             this.route.navigateByUrl("/admin")
@@ -31,6 +33,7 @@ export class LoginComponent implements OnInit {
         },
         error: (error) => {
           console.log("Error", error)
+          this.notification.create("error", "Login Failed", "Check your username or password")
         },
         complete: () => {
 
@@ -49,7 +52,9 @@ export class LoginComponent implements OnInit {
   constructor(
     private fb: UntypedFormBuilder,
     private route : Router,
-    private userService : UserService) {}
+    private userService : UserService,
+    private notification : NzNotificationService
+  ) {}
 
   ngOnInit(): void {
     this.validateForm = this.fb.group({

@@ -19,6 +19,9 @@ export class ProductManagementComponent implements OnInit {
   importQuantityVisible = false;
   quantityInventory = 0;
 
+  productDetail = {}
+  isDetail = false;
+
   isUpdating = false;
 
   validateForm!: UntypedFormGroup;
@@ -37,6 +40,20 @@ export class ProductManagementComponent implements OnInit {
         console.log(error)
       }
     })
+  }
+
+  getProductDetail() {
+    if (this.productSelected.product_id) {
+
+      this.sellerService.getProduct(this.productSelected.product_id).subscribe({
+        next: (data) => {
+          this.productDetail = data;
+        },
+        error: err => {
+          console.log(err);
+        }
+      })
+    }
   }
 
   ngOnInit(): void {
@@ -60,6 +77,16 @@ export class ProductManagementComponent implements OnInit {
 
   handleCancel() {
     this.addNewVisible = false;
+  }
+
+  handleDetailClick(product : Product) {
+    this.productSelected = product;
+    this.isDetail = true;
+    this.getProductDetail();
+  }
+
+  closeDetail() {
+    this.isDetail = false;
   }
 
   handleImportClick(product : Product) {
@@ -89,6 +116,7 @@ export class ProductManagementComponent implements OnInit {
       },
       error: err => {
         console.log(err);
+        this.notification.create("error", "Product", "Update failed");
       }
     })
   }
@@ -99,6 +127,9 @@ export class ProductManagementComponent implements OnInit {
         next: (data) => {
           console.log(data);
           this.notification.create("success", "Product", "Delete successfully");
+        },
+        error: err => {
+          this.notification.create("error", "Product", "Delete failed");
         }
       })
     }
@@ -114,6 +145,7 @@ export class ProductManagementComponent implements OnInit {
         },
         error: (err) => {
           console.log(err);
+          this.notification.create("error", "Send In Bound", "Failed");
         }
       })
     }

@@ -30,6 +30,7 @@ import {NgOptimizedImage} from "@angular/common";
 import {NzNoAnimationModule} from "ng-zorro-antd/core/no-animation";
 import {NzNotificationModule} from "ng-zorro-antd/notification";
 import { OrderUserComponent } from './user-module/components/order-user/order-user.component';
+import { WelcomeComponent } from './welcome/welcome.component';
 
 @NgModule({
   declarations: [
@@ -46,6 +47,7 @@ import { OrderUserComponent } from './user-module/components/order-user/order-us
     LoginComponent,
     RegisterComponent,
     OrderUserComponent,
+    WelcomeComponent,
   ],
   imports: [
     BrowserModule,

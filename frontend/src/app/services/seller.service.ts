@@ -16,6 +16,12 @@ export class SellerService {
     })
   }
 
+  getProduct(productId : number) {
+    return this.http.get(`https://localhost/sellers/getProduct/${productId}`, {
+      withCredentials: true
+    })
+  }
+
   addNewProduct(product : ProductForm) {
     const body = new FormData();
     body.append("title", product.title as string);

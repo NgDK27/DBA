@@ -53,7 +53,7 @@ export class WarehousesComponent implements OnInit {
       province: [null, [Validators.required]],
       city: [null, [Validators.required]],
       district: [null, [Validators.required]],
-      street: [null, Validators.required],
+      street: [null, [Validators.required]],
       number: [null, [Validators.required]],
       area: [null, [Validators.required]]
     })
@@ -86,12 +86,12 @@ export class WarehousesComponent implements OnInit {
     this.addNewVisible = true;
     this.warehouseSelected = warehouse;
     this.validateForm = this.fb.group({
-      name: [null, [Validators.required]],
-      province: [null, [Validators.required]],
-      city: [null, [Validators.required]],
-      district: [null, [Validators.required]],
-      street: [null, Validators.required],
-      number: [null, [Validators.required]]
+      name: [null, []],
+      province: [null, []],
+      city: [null, []],
+      district: [null, []],
+      street: [null, []],
+      number: [null, []]
     })
     this.validateForm.patchValue({
       name: this.warehouseSelected.name
@@ -115,6 +115,7 @@ export class WarehousesComponent implements OnInit {
         },
         error: err => {
           console.log(err)
+          this.notification.create("error", "Product", "Error when move product.");
         }
       })
     }else {
@@ -139,10 +140,12 @@ export class WarehousesComponent implements OnInit {
           next: (data) => {
             console.log(data);
             this.notification.create("success", "Notification", "Add new warehouse successfully");
+            this.loadAllWarehouses();
             this.addNewVisible = false;
           },
           error: (err) => {
             console.log(err);
+            this.notification.create("error", "Notification", "Add new warehouse failed");
           }
         })
       } else {
@@ -150,6 +153,7 @@ export class WarehousesComponent implements OnInit {
           next: (data) => {
             console.log(data);
             this.notification.create("success", "Notification", "Update warehouse successfully");
+            this.loadAllWarehouses();
             this.addNewVisible = false;
           },
           error: err => {
@@ -199,6 +203,7 @@ export class WarehousesComponent implements OnInit {
       },
       error: (err) => {
         console.log(err);
+        this.notification.create("error", "Notification", "Delete warehouse failed");
       }
     })
   }
