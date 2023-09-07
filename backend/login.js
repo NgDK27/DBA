@@ -3,6 +3,7 @@ const db = require("./dbconnection");
 const bcrypt = require("bcrypt");
 const app = express();
 const router = express.Router();
+const fs = require("fs");
 
 const login = async (req, res) => {
   const { username, password } = req.body;
@@ -21,7 +22,6 @@ const login = async (req, res) => {
           req.session.userid = user.user_id;
           req.session.role = user.role; // Store user role in session
           res.status(201).send(`hello ${req.session.role}`);
-          console.log(req.session);
         } else {
           res.status(401).send("Invalid credentials");
         }
@@ -43,7 +43,20 @@ const logout = (req, res) => {
   });
 };
 
+const images = (req, res) => {
+  var filename = req.params.id;
+  fs.readFile("./images/" + filename, function (err, data) {
+    if (err) {
+      console.log(err);
+    } else {
+      res.contentType("image/jpeg");
+      res.send(data);
+    }
+  });
+};
+
 router.route("/login").post(login);
 router.route("/logout").get(logout);
+router.route("/images/:id").get(images);
 
 module.exports = router;

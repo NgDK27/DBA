@@ -1,0 +1,56 @@
+.container-layout {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  min-height: 100vh;
+}
+
+nz-layout {
+  height: 100%;
+}
+
+.header-container {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.logo {
+  color: #fff;
+}
+.button {
+  background: transparent;
+  border: none;
+  color: #FFFFFF;
+  padding: 0 16px;
+}
+.button:focus,
+.button:focus-visible {
+  outline: none;
+}
+.role-logo {
+  margin-left: 24px;
+}
+.header-menu {
+  line-height: 64px;
+}
+
+.sider-menu {
+  height: 100%;
+  border-right: 0;
+}
+
+.inner-layout {
+  padding: 0 24px 24px;
+}
+
+.pt-24 {
+  padding-top: 24px;
+}
+
+nz-content {
+  background: #fff;
+  padding: 24px;
+  min-height: 280px;
+}

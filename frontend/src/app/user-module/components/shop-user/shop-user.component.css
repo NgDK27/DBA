@@ -1,0 +1,14 @@
+.pd-8-4 {
+  padding: 8px 8px;
+}
+.pd-8-16 {
+  padding: 8px 16px;
+}
+.cursor-pointer:hover {
+  cursor: pointer;
+}
+
+.height-600-scroll {
+  height: 600px;
+  overflow: scroll;
+}

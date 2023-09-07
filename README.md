@@ -2,6 +2,8 @@ post: /login
 
 get: /logout
 
+get: /images/:id
+
 customer:
 
 post: /customers/register
@@ -63,6 +65,7 @@ get: /getProduct/:id
 post: /sendInbound
 
 Category in mongodb:
+const categorySchema = new mongoose.Schema({
 categoryId: {
 type: Number,
 unique: true,
@@ -82,8 +85,7 @@ key: String,
 value: mongoose.Schema.Types.Mixed,
 },
 ],
-
-4 categories rn: 1:clothes, 2:food, 3:books, 4:electronics (nothing yet the above is schema)
+});
 
 openssl genpkey -algorithm RSA -out private.key
 

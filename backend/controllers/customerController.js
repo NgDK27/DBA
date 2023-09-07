@@ -51,7 +51,7 @@ const getCategoryAttributes = async (categoryId, attributes = []) => {
 
   attributes = [...attributes, ...category.attributes];
   if (category.parent) {
-    return getCategoryAttributes(category.parent, attributes);
+    return getCategoryAttributes(category.parent.categoryId, attributes);
   }
 
   return attributes;
@@ -79,7 +79,7 @@ const getAllProducts = async (req, res) => {
     };
 
     let query =
-      "SELECT p.product_id, p.title, p.description, p.price, p.image, p.category_id, SUM(i.quantity) AS available_quantity, u.username AS seller FROM product p LEFT JOIN inventory i ON p.product_id = i.product_id JOIN users u ON p.seller_id = u.user_id";
+      "SELECT p.product_id, p.title, p.description, p.price, p.image, p.category_id, COALESCE(SUM(i.quantity), 0) AS available_quantity, u.username AS seller FROM product p LEFT JOIN inventory i ON p.product_id = i.product_id JOIN users u ON p.seller_id = u.user_id";
     const queryParams = [];
 
     const conditions = [];
@@ -117,7 +117,8 @@ const getAllProducts = async (req, res) => {
       query += ` WHERE ${conditions.join(" AND ")}`;
     }
 
-    query += " GROUP BY p.product_id, p.title, p.description, p.price, p.image";
+    query +=
+      " GROUP BY p.product_id, p.title, p.description, p.price, p.image, p.category_id, u.username";
 
     if (sortField && (sortOrder === "ASC" || sortOrder === "DESC")) {
       query += ` ORDER BY ${sortField} ${sortOrder}`;
@@ -125,9 +126,6 @@ const getAllProducts = async (req, res) => {
 
     // Execute the SQL query
     db.mysqlConnection.query(query, queryParams, (error, results) => {
-      console.log(query);
-      console.log(queryParams);
-
       if (error) {
         throw error;
       }
@@ -217,7 +215,7 @@ const getProduct = async (req, res) => {
   });
 };
 
-function checkInvenQuantity(productId) {
+async function checkInvenQuantity(productId) {
   const query =
     "SELECT SUM(quantity) AS quantity FROM inventory WHERE product_id = ?";
   const results = new Promise((resolve, reject) => {

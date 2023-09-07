@@ -1,0 +1,29 @@
+<div class="container-layout">
+  <nz-layout>
+    <nz-header class="header-container">
+      <div class="logo">
+        <span>DK E-COMMERCE</span>
+        <span class="role-logo">SELLER</span>
+      </div>
+      <div>
+        <button class="button" (click)="logout()">
+          <i class="fas fa-sign-out-alt"></i>
+        </button>
+      </div>
+    </nz-header>
+    <nz-layout>
+      <nz-sider nzWidth="200px" nzTheme="light">
+        <ul nz-menu nzMode="inline" class="sider-menu">
+          <li nz-menu-item [routerLink]="'product-management'">
+            Product management
+          </li>
+        </ul>
+      </nz-sider>
+      <nz-layout class="inner-layout pt-24">
+        <nz-content>
+          <router-outlet></router-outlet>
+        </nz-content>
+      </nz-layout>
+    </nz-layout>
+  </nz-layout>
+</div>

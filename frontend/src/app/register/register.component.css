@@ -1,0 +1,20 @@
+.container-form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+.wrapper-form {
+  height: fit-content;
+  width: fit-content;
+}
+
+[nz-form] {
+  min-width: 600px;
+}
+
+.register-are {
+  margin-bottom: 8px;
+}

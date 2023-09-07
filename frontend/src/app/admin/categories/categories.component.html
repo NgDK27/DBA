@@ -1,0 +1,155 @@
+<div class="table-operations">
+  <button nz-button (click)="addNew()">Add new</button>
+</div>
+<nz-table
+  #basicTable
+  [nzData]="listOfData"
+  [nzPageSize]="8"
+  [nzTotal]="listOfData.length"
+>
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Name</th>
+      <th>Attribute</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let data of basicTable.data">
+      <td>{{ data.categoryId }}</td>
+      <td>{{ data.name }}</td>
+      <td>{{ mapContent(data) }}</td>
+      <td>
+        <button nz-button nzType="text" (click)="clickDetail(data)">
+          Detail
+        </button>
+        <nz-divider nzType="vertical"></nz-divider>
+        <button nz-button nzType="text" (click)="handleUpdateClick(data)">
+          Update
+        </button>
+        <nz-divider nzType="vertical"></nz-divider>
+        <button nz-button nzType="text" (click)="deleteCategory(data)">
+          Delete
+        </button>
+      </td>
+    </tr>
+  </tbody>
+</nz-table>
+
+<nz-modal
+  [nzTitle]="'Category Detail'"
+  [(nzVisible)]="isDetail"
+  (nzOnCancel)="closeDetail()">
+  <div *nzModalContent>
+    <p>{{categoryDetail | json}}</p>
+  </div>
+  <div *nzModalFooter>
+    <button nz-button nzType="default" (click)="closeDetail()">Close</button>
+  </div>
+</nz-modal>
+
+<nz-modal
+  [(nzVisible)]="addNewVisible"
+  [nzTitle]="isUpdating ? 'Update category' : 'Add new category'"
+  (nzOnCancel)="handleCancel()"
+>
+  <div *nzModalContent>
+    <form nz-form [formGroup]="validateForm" (ngSubmit)="handleOk()">
+      <nz-form-item>
+        <nz-form-label [nzXs]="24" [nzSm]="4" nzRequired>Name</nz-form-label>
+        <nz-form-control
+          [nzXs]="24"
+          [nzSm]="20"
+          nzHasFeedback
+          [nzErrorTip]="userErrorTpl"
+        >
+          <input nz-input formControlName="name" />
+          <ng-template #userErrorTpl let-control>
+            <ng-container *ngIf="control.hasError('required')"
+              >Please input the category name!</ng-container
+            >
+          </ng-template>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label [nzXs]="24" [nzSm]="4" nzFor="parent"
+          >Parent</nz-form-label
+        >
+        <nz-form-control [nzXs]="24" [nzSm]="20">
+          <nz-select
+            id="parent"
+            formControlName="parent"
+            nzPlaceHolder="Select the parent"
+          >
+            <nz-option
+              [nzValue]="category.name"
+              [nzLabel]="category.name ? category.name : ''"
+              *ngFor="let category of listOfData"
+            ></nz-option>
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item *ngFor="let control of listOfControl; let i = index">
+        <nz-form-label
+          [nzXs]="24"
+          [nzSm]="4"
+          *ngIf="i === 0"
+          [nzFor]="control.key"
+        >
+          Attributes
+        </nz-form-label>
+        <nz-form-control
+          [nzXs]="24"
+          [nzSm]="20"
+          [nzOffset]="i === 0 ? 0 : 4"
+          nzErrorTip="Please input attribute or delete this field."
+        >
+          <input
+            class="passenger-input"
+            nz-input
+            placeholder="key attribute"
+            [attr.id]="control.id"
+            [formControlName]="control.key"
+          />
+          <input
+            class="passenger-input"
+            nz-input
+            placeholder="value attribute"
+            [attr.id]="control.id"
+            [formControlName]="control.value"
+          />
+          <button
+            nz-button
+            nzType="text"
+            class="dynamic-delete-button"
+            (click)="removeField(control, $event)"
+          >
+            Delete
+          </button>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-control
+          [nzXs]="{ span: 24, offset: 0 }"
+          [nzSm]="{ span: 20, offset: 4 }"
+        >
+          <button
+            nz-button
+            nzType="dashed"
+            class="add-button"
+            (click)="addField($event)"
+          >
+            Add attribute
+          </button>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </div>
+  <div *nzModalFooter>
+    <button nz-button nzType="default" (click)="handleCancel()">Cancel</button>
+    <button nz-button nzType="primary" (click)="handleOk()">Submit</button>
+  </div>
+</nz-modal>
