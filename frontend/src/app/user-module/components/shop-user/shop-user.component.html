@@ -3,6 +3,7 @@
   <div class="row px-xl-5">
     <div class="col-12">
       <nav class="breadcrumb bg-light mb-30">
+        <a class="breadcrumb-item text-dark" href="#">Home</a>
         <span class="breadcrumb-item active">Products</span>
       </nav>
     </div>
@@ -24,81 +25,31 @@
           <div
             class="custom-control custom-checkbox d-flex align-items-center justify-content-between mb-3"
           >
+            <label class="" for="price-all">Min :</label>
             <input
-              type="radio"
+              type="number"
               name="price-filter"
-              class="custom-control-input"
-              checked
+              class=""
               id="price-all"
-              (click)="setMinMaxPrice(undefined, undefined)"
+              [(ngModel)]="filterValue.minPrice"
             />
-            <label class="custom-control-label" for="price-all">All</label>
           </div>
           <div
             class="custom-control custom-checkbox d-flex align-items-center justify-content-between mb-3"
           >
+            <label class="" for="price-1">Max: </label>
             <input
-              type="radio"
+              type="number"
               name="price-filter"
-              class="custom-control-input"
+              class=""
               id="price-1"
-              (click)="setMinMaxPrice(0, 199)"
+              [(ngModel)]="filterValue.maxPrice"
             />
-            <label class="custom-control-label" for="price-1">$0 - $199</label>
           </div>
           <div
             class="custom-control custom-checkbox d-flex align-items-center justify-content-between mb-3"
           >
-            <input
-              type="radio"
-              name="price-filter"
-              class="custom-control-input"
-              id="price-2"
-              (click)="setMinMaxPrice(200, 499)"
-            />
-            <label class="custom-control-label" for="price-2"
-              >$200 - $499</label
-            >
-          </div>
-          <div
-            class="custom-control custom-checkbox d-flex align-items-center justify-content-between mb-3"
-          >
-            <input
-              type="radio"
-              name="price-filter"
-              class="custom-control-input"
-              id="price-3"
-              (click)="setMinMaxPrice(500, 799)"
-            />
-            <label class="custom-control-label" for="price-3"
-              >$500 - $799</label
-            >
-          </div>
-          <div
-            class="custom-control custom-checkbox d-flex align-items-center justify-content-between mb-3"
-          >
-            <input
-              type="radio"
-              name="price-filter"
-              class="custom-control-input"
-              id="price-4"
-              (click)="setMinMaxPrice(800, 1399)"
-            />
-            <label class="custom-control-label" for="price-4"
-              >$800 - $1399</label
-            >
-          </div>
-          <div
-            class="custom-control custom-checkbox d-flex align-items-center justify-content-between"
-          >
-            <input
-              type="radio"
-              name="price-filter"
-              class="custom-control-input"
-              id="price-5"
-              (click)="setMinMaxPrice(1400, undefined)"
-            />
-            <label class="custom-control-label" for="price-5">Over 1400$</label>
+            <button (click)="changeFilter()">Search</button>
           </div>
         </form>
       </div>
@@ -154,39 +105,81 @@
                   class="btn btn-sm btn-light dropdown-toggle pd-8-4"
                   data-toggle="dropdown"
                 >
-                  Sorting
+                  <span *ngIf="!filterValue.sortField">Sorting</span>
+                  <span
+                    *ngIf="
+                      filterValue.sortField === 'price' &&
+                      filterValue.sortOrder === 'DESC'
+                    "
+                    >price <i class="ml-1 fas fa-arrow-down"></i
+                  ></span>
+                  <span
+                    *ngIf="
+                      filterValue.sortField === 'price' &&
+                      filterValue.sortOrder === 'ASC'
+                    "
+                    >price <i class="ml-1 fas fa-arrow-up"></i
+                  ></span>
+                  <span
+                    *ngIf="
+                      filterValue.sortField === 'title' &&
+                      filterValue.sortOrder === 'DESC'
+                    "
+                    >title <i class="ml-1 fas fa-arrow-down"></i
+                  ></span>
+                  <span
+                    *ngIf="
+                      filterValue.sortField === 'title' &&
+                      filterValue.sortOrder === 'ASC'
+                    "
+                    >title <i class="ml-1 fas fa-arrow-up"></i
+                  ></span>
+                  <span
+                    *ngIf="
+                      filterValue.sortField === 'added_time' &&
+                      filterValue.sortOrder === 'DESC'
+                    "
+                    >added time <i class="ml-1 fas fa-arrow-down"></i
+                  ></span>
+                  <span
+                    *ngIf="
+                      filterValue.sortField === 'added_time' &&
+                      filterValue.sortOrder === 'ASC'
+                    "
+                    >added time <i class="ml-1 fas fa-arrow-up"></i
+                  ></span>
                 </button>
                 <div class="dropdown-menu dropdown-menu-right">
                   <a
                     class="dropdown-item"
                     (click)="setSortField('price', 'DESC')"
-                    >price desc</a
-                  >
+                    >price <i class="ml-1 fas fa-arrow-down"></i
+                  ></a>
                   <a
                     class="dropdown-item"
                     (click)="setSortField('price', 'ASC')"
-                    >price asc</a
-                  >
+                    >price <i class="ml-1 fas fa-arrow-up"></i
+                  ></a>
                   <a
                     class="dropdown-item"
                     (click)="setSortField('title', 'DESC')"
-                    >title desc</a
-                  >
+                    >title <i class="ml-1 fas fa-arrow-down"></i
+                  ></a>
                   <a
                     class="dropdown-item"
                     (click)="setSortField('title', 'ASC')"
-                    >title asc</a
-                  >
+                    >title <i class="ml-1 fas fa-arrow-up"></i
+                  ></a>
                   <a
                     class="dropdown-item"
                     (click)="setSortField('added_time', 'DESC')"
-                    >added time desc</a
-                  >
+                    >added time <i class="ml-1 fas fa-arrow-down"></i
+                  ></a>
                   <a
                     class="dropdown-item"
                     (click)="setSortField('added_time', 'ASC')"
-                    >added time asc</a
-                  >
+                    >added time <i class="ml-1 fas fa-arrow-up"></i
+                  ></a>
                 </div>
               </div>
               <div class="btn-group ml-2">

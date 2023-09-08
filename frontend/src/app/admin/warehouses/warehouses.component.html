@@ -137,6 +137,31 @@
         </tr>
       </tbody>
     </nz-table>
+
+    <nz-table #detail [nzData]="getWare()">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Province</th>
+          <th>City</th>
+          <th>District</th>
+          <th>Street</th>
+          <th>Number</th>
+          <th>Total volume</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>{{ detail.data[0].name }}</td>
+          <td>{{ detail.data[0].province }}</td>
+          <td>{{ detail.data[0].city }}</td>
+          <td>{{ detail.data[0].district }}</td>
+          <td>{{ detail.data[0].street }}</td>
+          <td>{{ detail.data[0].number }}</td>
+          <td>{{ detail.data[0].total_area_volume }}</td>
+        </tr>
+      </tbody>
+    </nz-table>
   </div>
   <div *nzModalFooter>
     <button nz-button nzType="default" (click)="closeDetail()">Close</button>
