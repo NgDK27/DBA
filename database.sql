@@ -73,6 +73,21 @@ CREATE TABLE orderItem (
 );
 
 
+-- Indexes
+ALTER TABLE product ADD FULLTEXT INDEX idx_description (description);
+ALTER TABLE product ADD INDEX idx_product_category (category_id);
+ALTER TABLE product ADD INDEX idx_product_price (price);
+ALTER TABLE product ADD INDEX idx_product_dimensions (width, length, height);
+ALTER TABLE product ADD INDEX idx_seller (seller_id);
+
+ALTER TABLE warehouse ADD INDEX idx_warehouse_warehouse_name (name);
+ALTER TABLE warehouse ADD INDEX idx_warehouse_volume (total_area_volume);
+ALTER TABLE warehouse ADD INDEX idx_warehouse_address (province, city, district);
+
+ALTER TABLE orders ADD INDEX idx_order_status (order_status);
+
+
+
 
 -- Procedure for sending inbound order
 DROP PROCEDURE IF EXISTS SendProductToWarehouse;

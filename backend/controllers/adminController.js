@@ -200,7 +200,7 @@ const updateWarehouse = async (req, res) => {
   }
   if (city) {
     updateFields.push("city = ?");
-    updateValues.push(district);
+    updateValues.push(city);
   }
   if (district) {
     updateFields.push("district = ?");
