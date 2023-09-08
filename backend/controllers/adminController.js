@@ -109,7 +109,7 @@ async function hasAssociatedProducts(categoryId) {
 
     for (const childCategory of childCategories) {
       const checkProduct = db.mysqlConnection.query(
-        "SELECT * FROM product WHERE catagory_id = ?",
+        "SELECT product_id FROM product WHERE catagory_id = ?",
         childCategory.categoryId
       );
 
@@ -200,7 +200,7 @@ const updateWarehouse = async (req, res) => {
   }
   if (city) {
     updateFields.push("city = ?");
-    updateValues.push(district);
+    updateValues.push(city);
   }
   if (district) {
     updateFields.push("district = ?");
@@ -245,7 +245,7 @@ const deleteWarehouse = async (req, res) => {
   const name = req.query;
 
   const getDeleteWarehouseQuery =
-    "SELECT * FROM warehouse w LEFT JOIN inventory i ON w.warehouse_id = i.warehouse_id WHERE i.product_id IS NULL AND w.name = ?";
+    "SELECT w.warehouse_id FROM warehouse w LEFT JOIN inventory i ON w.warehouse_id = i.warehouse_id WHERE i.product_id IS NULL AND w.name = ?";
 
   db.mysqlConnection.query(
     getDeleteWarehouseQuery,
@@ -300,7 +300,7 @@ const getAllWarehouses = async (req, res) => {
 const getWarehouse = async (req, res) => {
   const warehouseId = req.params.id;
   const query =
-    "SELECT p.product_id, SUM(i.quantity) AS total_quantity, (p.length*p.width*p.height*SUM(i.quantity)) as occupied_area FROM inventory i JOIN warehouse w ON w.warehouse_id = i.warehouse_id JOIN product p ON i.product_id = p.product_id WHERE i.warehouse_id = ? GROUP BY i.warehouse_id, p.product_id";
+    "SELECT w.name, w.province, w.city, w.district, w.street, w.number, w.total_area_volume, p.product_id, SUM(i.quantity) AS total_quantity, (p.length*p.width*p.height*SUM(i.quantity)) as occupied_area FROM inventory i JOIN warehouse w ON w.warehouse_id = i.warehouse_id JOIN product p ON i.product_id = p.product_id WHERE i.warehouse_id = ? GROUP BY i.warehouse_id, p.product_id";
   const availableArea =
     "SELECT w.available_area FROM warehouse w WHERE w.warehouse_id = ?";
   Promise.all([

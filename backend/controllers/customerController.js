@@ -235,44 +235,29 @@ const addCart = async (req, res) => {
   const { productId, quantity } = req.body;
   const totalQuantity = await checkInvenQuantity(productId);
 
-  if (
-    Number(quantity) > JSON.parse(JSON.stringify(totalQuantity))[0].quantity
-  ) {
-    res.status(400).json({ message: "Not enough product in stock" });
-  } else {
-    if (!global.cart) {
-      global.cart = [];
-      // Add the product to the cart (in-memory representation)
-      global.cart.push({ productId, quantity });
-      res.json({ message: "Product added to cart" });
-    } else {
-      const existProduct = global.cart.find(
-        (obj) => obj.productId === productId
-      );
-      if (existProduct) {
-        const productToUpdate = global.cart.find(
-          (obj) => obj.productId === productId
-        );
-        const oldQuantity = parseInt(
-          global.cart.find((obj) => obj.productId === productId)?.quantity || 0
-        );
+  // Perform input validation here
 
-        if (
-          oldQuantity + Number(quantity) >
-          JSON.parse(JSON.stringify(totalQuantity))[0].quantity
-        ) {
-          res.status(400).json({ message: "Not enough product in stock" });
-        } else {
-          productToUpdate.quantity = oldQuantity + Number(quantity);
-          res.json({ message: "Product added to cart" });
-        }
-      } else {
-        global.cart.push({ productId, quantity });
-        res.json({ message: "Product added to cart" });
-      }
+  // Retrieve or create a user-specific cart
+  const userCart = req.session.cart || [];
+  const existingProduct = userCart.find((item) => item.productId === productId);
+
+  if (existingProduct) {
+    const oldQuantity = existingProduct.quantity;
+    if (oldQuantity + Number(quantity) > totalQuantity) {
+      res.status(400).json({ message: "Not enough product in stock" });
+      return;
     }
+    existingProduct.quantity += Number(quantity);
+  } else {
+    if (Number(quantity) > totalQuantity) {
+      res.status(400).json({ message: "Not enough product in stock" });
+      return;
+    }
+    userCart.push({ productId, quantity });
   }
-  console.log(global.cart);
+
+  req.session.cart = userCart;
+  res.json({ message: "Product added to cart" });
 };
 
 const placeOrder = async (req, res) => {
@@ -290,7 +275,7 @@ const placeOrder = async (req, res) => {
     const eligibleProducts = [];
     const ineligibleProducts = [];
 
-    for (const cartItem of global.cart) {
+    for (const cartItem of req.session.cart) {
       const { productId, quantity } = cartItem;
 
       const availableQuantityResult = await checkInvenQuantity(productId);
@@ -322,7 +307,6 @@ const placeOrder = async (req, res) => {
 
     for (const cartItem of eligibleProducts) {
       const { productId, quantity } = cartItem;
-      console.log(cartItem);
 
       // Update inventory quantity
       await queryAsync("CALL PlaceOrder(? , ?, ?)", [
@@ -331,12 +315,22 @@ const placeOrder = async (req, res) => {
         quantity,
       ]);
     }
+    const checkIfLegit = await queryAsync(
+      "SELECT o.order_id FROM orders o LEFT JOIN orderItem oi ON o.order_id = oi.order_id WHERE oi.order_id IS NULL"
+    );
+
+    if (checkIfLegit.length > 0) {
+      const deleteIfNotLegit = await queryAsync(
+        "DELETE FROM orders WHERE order_id = ?",
+        JSON.parse(JSON.stringify(checkIfLegit))[0].order_id
+      );
+    }
 
     await util.promisify(connection.commit).call(connection);
     connection.release((error) => (error ? reject(error) : resolve())); // Release the connection back to the pool
 
     // Clear the cart
-    global.cart = [];
+    req.session.cart = [];
 
     const response = {
       message: "Order placed successfully",

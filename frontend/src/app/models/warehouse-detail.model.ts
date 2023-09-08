@@ -8,5 +8,12 @@ export class WarehouseDetail {
 type Result1 = {
   product_id?: number,
   total_quantity?: number,
-  occupied_area?: number
+  occupied_area?: number,
+  name?: String,
+  province?: String,
+  city?: String,
+  district?: String,
+  street?: String,
+  number?: String,
+  total_area_volume?: number
 }

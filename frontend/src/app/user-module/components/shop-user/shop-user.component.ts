@@ -79,6 +79,9 @@ export class ShopUserComponent implements OnInit {
   }
 
   setSortField(field : string | undefined, order : "DESC" | "ASC") {
+    if (this.filterValue.sortField === field) {
+      field = undefined;
+    }
     this.filterValue.sortField = field;
     this.filterValue.sortOrder = order;
     this.changeFilter();
