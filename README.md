@@ -1,3 +1,12 @@
+# Set up database
+- Open a root instance of MySQL database
+- Run "ALTER USER 'root'@'localhost' identified with mysql_native_password by 'password';"
+- Then run "FLUSH PRIVILEDGES;"
+- Go into the database.sql file in the project and copy all the contents into the sql workbench
+- Run all of the sql code
+- The resulting database should look like this
+- ![Database sql](./backend/images/database_structure_sql.png)
+
 # Intructions for launching project
 - Open cmd terminal
 - Cd into the "backend" directory of the project
