@@ -26,7 +26,8 @@
 
 # Sample data for database:
 
-## Accounts for testing, all test accounts will have the same username and password:
+## Accounts for testing:
+All test accounts will have the same username and password:
 ### Customer accounts: 
 Customer1, Customer2, Customer3, Customer4, Customer5, Customer6, Customer7
 ### Seller accounts:
