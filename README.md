@@ -507,27 +507,13 @@ post: /sendInbound
 
 Category in mongodb:
 const categorySchema = new mongoose.Schema({  
-    categoryId: {  
-        type: Number,
-        unique: true,
-    } ,
+    categoryId: {  type: Number, unique: true,} ,
+     
+    name: {   type: String,} , 
     
-    name: {  
-        type: String,
-    } ,
+    parent: {   type: mongoose.Schema.Types.ObjectId, ref: "Category",  default: null, } ,
     
-    parent: {  
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Category",  
-        default: null,
-    
-    } ,
     children: [{ type: mongoose.Schema.Types.ObjectId, ref: "Category" } ] ,
         
-    attributes: [
-        {
-        key: String,
-        value: mongoose.Schema.Types.Mixed,
-        } ,
-    ] ,
+    attributes: [ {key: String, value: mongoose.Schema.Types.Mixed, } ,] ,
 } );
