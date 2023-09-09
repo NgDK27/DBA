@@ -511,16 +511,20 @@ const categorySchema = new mongoose.Schema({
         type: Number,
         unique: true,
     } ,
+    
     name: {  
         type: String,
     } ,
+    
     parent: {  
         type: mongoose.Schema.Types.ObjectId,
         ref: "Category",  
         default: null,
+    
     } ,
-        children: [{ type: mongoose.Schema.Types.ObjectId, ref: "Category" } ] ,
-        attributes: [
+    children: [{ type: mongoose.Schema.Types.ObjectId, ref: "Category" } ] ,
+        
+    attributes: [
         {
         key: String,
         value: mongoose.Schema.Types.Mixed,
