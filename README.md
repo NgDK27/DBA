@@ -12,6 +12,8 @@
 - ![Security Warning Advance Clicked](./backend/images/Warning_AfterAdvance.png)
 - Click on "Proceed to localhost (unsafe)" to go to the website
 - Now repeat the process for address location "https://localhost" (this is where the backend of the site is hosted)
+- Finally go back to the address "https://localhost:4200" to see the website
+- ![Website Home Screen](./backend/images/Home_ScreenFinal.png)
 
 # Sample data for database:
 
