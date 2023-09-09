@@ -108,8 +108,8 @@ const getAllProducts = async (req, res) => {
     }
 
     if (search) {
-      conditions.push("(title LIKE ? OR description LIKE ?)");
-      queryParams.push(`%${search}%`, `%${search}%`);
+      conditions.push("(title LIKE ? OR MATCH(description) AGAINST(?))");
+      queryParams.push(`%${search}%`, search);
     }
 
     // Combine conditions with 'AND'
