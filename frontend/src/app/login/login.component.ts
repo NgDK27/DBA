@@ -15,10 +15,8 @@ export class LoginComponent implements OnInit {
 
   submitForm(): void {
     if (this.validateForm.valid) {
-      console.log('submit', this.validateForm.value);
       this.userService.login(this.validateForm.value.username, this.validateForm.value.password).subscribe({
         next: (data) => {
-          console.log(data)
           const role = data.split(" ");
           if (role[1] === "warehouse_admin") {
             this.route.navigateByUrl("/admin")
