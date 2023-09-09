@@ -507,6 +507,7 @@ post: /sendInbound
 
 Category in mongodb:
 const categorySchema = new mongoose.Schema({  
+
     categoryId: {  type: Number, unique: true,} ,
      
     name: {   type: String,} , 
@@ -516,4 +517,5 @@ const categorySchema = new mongoose.Schema({
     children: [{ type: mongoose.Schema.Types.ObjectId, ref: "Category" } ] ,
         
     attributes: [ {key: String, value: mongoose.Schema.Types.Mixed, } ,] ,
+    
 } );
