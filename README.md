@@ -19,10 +19,6 @@
   cd backend
   npm i
   ```
-- Go back to the root dir
-  ```bash
-  cd ..
-  ```
 - It will look something like this:
   ![Two terminal dependencies](./backend/images/two_terminal_dependencies.png)
 - Install dependencies for the front-end
