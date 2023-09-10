@@ -19,13 +19,13 @@
   cd backend
   npm i
   ```
-- It will look something like this:
-  ![Two terminal dependencies](./backend/images/two_terminal_dependencies.png)
 - Install dependencies for the front-end
   ```bash
   cd frontend
   npm i
   ```
+- It will look something like this:
+  ![Two terminal dependencies](./backend/images/two_terminal_dependencies.png)
 - Start the back-end of the project in the first terminal
   ```bash
   cd backend
