@@ -153,6 +153,38 @@ INSERT INTO orderitem(order_id, product_id, quantity, warehouse_id) VALUES (11, 
         - Biography  
         - Self-help  
 
+### All categories asides from “Electronics” and “Books” each has an attribute:
+- Mobile Phones: Advance Camera Technology
+- Computers & Accessories: High-Performance Computing
+- Cameras & Photography: High-Quality Imaging
+- Audio & Headphones: Immersive Sound Experience
+- Home Appliances: Efficient Household Solutions
+- Fiction: Imaginative Story
+- Non-Fiction: Informative Exploration
+- Apple: Premium Build Quality
+- Samsung: Diverse Product Range
+- Laptops: Perfectly portable
+- Desktops: Powerful Computing
+- Monitors: High-Resolution Displays
+- Keyboards & Mice: Ergonomic Design
+- Digital Cameras: Compact and Versatile
+- DSLR Cameras: Professional Photography
+- Headphones: Noise Isolation and Sound Quality
+- Bluetooth Speakers: Wireless
+- Earphones: On-the-Go Audio
+- Refrigerators: Food Preserving Storage
+- Washing Machines: Low noise operation
+- Science Fiction: Speculative Futures
+- Fantasy Fiction: Magical Realms
+- Horror Fiction: Suspenseful Narratives
+- Mystery and Thriller: Intriguing Plots
+- Historical Fiction: Historical Authenticity
+- Romance Fiction: Romantic Themes
+- Autobiography & Memoir: Personal Narratives
+- Biography: Life Stories
+- Self-help: Personal Development
+
+
 # Video Demonstration of Project:
 https://1drv.ms/v/s!AtiEBnA7_FxagfpHq9V1m29IusOtBA
 
