@@ -8,7 +8,7 @@
 - Go into the database.sql file in the project and copy all the contents into the sql workbench
 - Run all of the sql code
 - The resulting database should look like this
-- ![Database sql](./backend/images/database_structure_sql.png)
+  ![Database sql](./backend/images/database_structure_sql.png)
 
 # Intructions for launching project
 - Open cmd terminal in the root directory of the project
@@ -27,7 +27,7 @@
   npm i
   ```
 - Open 2 terminals
-- ![Two terminal](./backend/images/two_terminal.png)
+  ![Two terminal](./backend/images/two_terminal.png)
 - Start the back-end of the project in the first terminal
   ```bash
   cd backend
@@ -39,16 +39,16 @@
   npm start
   ```
 - The end result should look like this:
-- ![Two terminal result](./backend/images/two_terminal_result.png)
+  ![Two terminal result](./backend/images/two_terminal_result.png)
 - Open a web browser and go to the address "https://localhost:4200"
 - When the website load you will see this screen 
-- ![Security Warning](./backend/images/Warning.png)
+  ![Security Warning](./backend/images/Warning.png)
 - Click on "Advance" on the bottom of the page, you will see more options displayed
-- ![Security Warning Advance Clicked](./backend/images/Warning_AfterAdvance.png)
+  ![Security Warning Advance Clicked](./backend/images/Warning_AfterAdvance.png)
 - Click on "Proceed to localhost (unsafe)" to go to the website
 - Now repeat the process for address location "https://localhost" (this is where the backend of the site is hosted)
 - Finally go back to the address "https://localhost:4200" to see the website
-- ![Website Home Screen](./backend/images/Home_ScreenFinal.png)
+  ![Website Home Screen](./backend/images/Home_ScreenFinal.png)
 
 # Sample data for database:
 
