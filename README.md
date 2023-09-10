@@ -33,13 +33,13 @@
   cd backend
   npm start
   ```
-  This will start the back end at [https://localhost](https://localhost)
+  This will start the back end at [https://localhost/](https://localhost/)
 - Start the front-end of the project in the second terminal
   ```bash
   cd frontend
   npm start
   ```
-  This will start the front end at [https://localhost:4200](https://localhost:4200)
+  This will start the front end at [https://localhost:4200/](https://localhost:4200/)
 - The end result should look like this:
   ![Two terminal result](./backend/images/two_terminal_result.png)
 - Open a web browser and go to the address "https://localhost:4200"
@@ -214,6 +214,7 @@ INSERT INTO orderitem(order_id, product_id, quantity, warehouse_id) VALUES (11, 
 
 
 # Video Demonstration of Project:
+Video on the link [here](https://1drv.ms/v/s!AtiEBnA7_FxagfpHq9V1m29IusOtBA)
 https://1drv.ms/v/s!AtiEBnA7_FxagfpHq9V1m29IusOtBA
 
 
