@@ -8,7 +8,7 @@
 - ![Database sql](./backend/images/database_structure_sql.png)
 
 # Intructions for launching project
-- Open cmd terminal
+- Open cmd terminal in the root directory of the project
 - Cd into the "backend" directory of the project
 - Type "npm i" to install all dependencies
 - Do the same for the "frontend" directory
@@ -258,27 +258,29 @@ post: /sendInbound
 
 # Category schema
 Category in mongodb:
+
 const categorySchema = new mongoose.Schema({  
-categoryId: {  
-type: Number,
-unique: true,
-}  ,
-name: {  
-type: String,
-}  ,
-parent: {  
-type: mongoose.Schema.Types.ObjectId,
-ref: "Category",  
-default: null,
-}  ,
-children: [{   type: mongoose.Schema.Types.ObjectId, ref: "Category" }  ]  ,
-attributes: [
-{  
-key: String,
-value: mongoose.Schema.Types.Mixed,
-}  ,
-]  ,
-}  );
+    categoryId: {  
+        type: Number,  
+        unique: true,  
+    },  
+    name: {  
+        type: String,  
+    },  
+    parent: {  
+        type: mongoose.Schema.Types.ObjectId,  
+        ref: "Category",  
+        default: null,  
+    },  
+    children: [{   type: mongoose.Schema.Types.ObjectId, ref: "Category" }],  
+    attributes: [  
+            {  
+                key: String,  
+                value: mongoose.Schema.Types.Mixed,  
+            },  
+        ],  
+});
+
 
 # Bash command for creating the certificate
 openssl genpkey -algorithm RSA -out private.key
@@ -287,3 +289,10 @@ openssl req -new -key private.key -out localhost.csr -subj "/CN=localhost"
 
 openssl x509 -req -days 365 -in localhost.csr -signkey private.key -out certificate.crt
 
+# Contribution
+| SID      | Name                 | Score |
+|:---------|:---------------------|:-----:|
+| s3925921 | Nguyen Dinh Khai     |   7   | 
+| s3878089 | Do Nam Binh          |   6   |
+| s3836454 | Nguyen Giang Huy     |   6   |
+| s3878010 | Nguyen Duc Anh       |   1   |
