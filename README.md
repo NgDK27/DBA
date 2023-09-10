@@ -12,6 +12,8 @@
 
 # Intructions for launching project
 - Open cmd terminal in the root directory of the project
+- Open 2 terminals
+  ![Two terminal](./backend/images/two_terminal.png)
 - Install dependencies for the back-end
   ```bash
   cd backend
@@ -21,13 +23,13 @@
   ```bash
   cd ..
   ```
+- It will look something like this:
+  ![Two terminal dependencies](./backend/images/two_terminal_dependencies.png)
 - Install dependencies for the front-end
   ```bash
   cd frontend
   npm i
   ```
-- Open 2 terminals
-  ![Two terminal](./backend/images/two_terminal.png)
 - Start the back-end of the project in the first terminal
   ```bash
   cd backend
