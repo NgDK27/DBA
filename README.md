@@ -33,21 +33,23 @@
   cd backend
   npm start
   ```
+  This will start the back end at [https://localhost](https://localhost)
 - Start the front-end of the project in the second terminal
   ```bash
   cd frontend
   npm start
   ```
+  This will start the front end at [https://localhost:4200](https://localhost:4200)
 - The end result should look like this:
   ![Two terminal result](./backend/images/two_terminal_result.png)
 - Open a web browser and go to the address "https://localhost:4200"
-- When the website load you will see this screen 
+- When the website load you will see this screen:
   ![Security Warning](./backend/images/Warning.png)
-- Click on "Advance" on the bottom of the page, you will see more options displayed
+- Click on "Advance" on the bottom of the page, you will see more options displayed:
   ![Security Warning Advance Clicked](./backend/images/Warning_AfterAdvance.png)
-- Click on "Proceed to localhost (unsafe)" to go to the website
+- Click on "Proceed to localhost (unsafe)" to go to the website:
 - Now repeat the process for address location "https://localhost" (this is where the backend of the site is hosted)
-- Finally go back to the address "https://localhost:4200" to see the website
+- Finally go back to the address "https://localhost:4200" to see the website:
   ![Website Home Screen](./backend/images/Home_ScreenFinal.png)
 
 # Sample data for database:
