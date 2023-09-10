@@ -188,13 +188,15 @@ INSERT INTO orderitem(order_id, product_id, quantity, warehouse_id) VALUES (11, 
 # Video Demonstration of Project:
 https://1drv.ms/v/s!AtiEBnA7_FxagfpHq9V1m29IusOtBA
 
+
+# Routes
 post: /login
 
 get: /logout
 
 get: /images/:id
 
-customer:
+## customer:
 
 post: /customers/register
 
@@ -212,7 +214,7 @@ post: /customer/placeOrder (will still go through for eligible product)
 
 put: /updateStatus/:id (update order's status)
 
-admin:
+## admin:
 
 post: /admins/register
 
@@ -238,7 +240,7 @@ delete: /admins/warehouses/:id (only with no products) (name)
 
 post: admins/moveProducts
 
-seller:
+## seller:
 
 post: /sellers/register
 
@@ -254,6 +256,7 @@ get: /getProduct/:id
 
 post: /sendInbound
 
+# Category schema
 Category in mongodb:
 const categorySchema = new mongoose.Schema({  
 categoryId: {  
@@ -277,6 +280,7 @@ value: mongoose.Schema.Types.Mixed,
 ]  ,
 }  );
 
+# Bash command for creating the certificate
 openssl genpkey -algorithm RSA -out private.key
 
 openssl req -new -key private.key -out localhost.csr -subj "/CN=localhost"
