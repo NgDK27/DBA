@@ -1,7 +1,10 @@
 # Set up database
 - Open a root instance of MySQL database
-- Run "ALTER USER 'root'@'localhost' identified with mysql_native_password by 'password';"
-- Then run "FLUSH PRIVILEDGES;"
+- Run script
+  ```bash
+  ALTER USER 'root'@'localhost' identified with mysql_native_password by 'password';
+  FLUSH PRIVILEDGES;
+  ```
 - Go into the database.sql file in the project and copy all the contents into the sql workbench
 - Run all of the sql code
 - The resulting database should look like this
@@ -9,11 +12,34 @@
 
 # Intructions for launching project
 - Open cmd terminal in the root directory of the project
-- Cd into the "backend" directory of the project
-- Type "npm i" to install all dependencies
-- Do the same for the "frontend" directory
-- Cd into the "backend" directory in the cmd terminal and run "npm start"
-- Open a second cmd terminal and cd into the "frontend" directory then run "npm start"
+- Install dependencies for the back-end
+  ```bash
+  cd backend
+  npm i
+  ```
+- Go back to the root dir
+  ```bash
+  cd ..
+  ```
+- Install dependencies for the front-end
+  ```bash
+  cd frontend
+  npm i
+  ```
+- Open 2 terminals
+- ![Two terminal](./backend/images/two_terminal.png)
+- Start the back-end of the project in the first terminal
+  ```bash
+  cd backend
+  npm start
+  ```
+- Start the front-end of the project in the second terminal
+  ```bash
+  cd frontend
+  npm start
+  ```
+- The end result should look like this:
+- ![Two terminal result](./backend/images/two_terminal_result.png)
 - Open a web browser and go to the address "https://localhost:4200"
 - When the website load you will see this screen 
 - ![Security Warning](./backend/images/Warning.png)
