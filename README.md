@@ -7,7 +7,7 @@
   ```
 - Go into the database.sql file in the project and copy all the contents into the sql workbench
 - Run all of the sql code
-- The resulting database should look like this
+- The resulting database should look like this:  
   ![Database sql](./backend/images/database_structure_sql.png)
 
 # Intructions for launching project
