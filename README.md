@@ -215,7 +215,7 @@ INSERT INTO orderitem(order_id, product_id, quantity, warehouse_id) VALUES (11, 
 
 # Video Demonstration of Project:
 Video on the link [here](https://1drv.ms/v/s!AtiEBnA7_FxagfpHq9V1m29IusOtBA)
-https://1drv.ms/v/s!AtiEBnA7_FxagfpHq9V1m29IusOtBA
+
 
 
 # Routes
