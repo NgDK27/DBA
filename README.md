@@ -28,13 +28,11 @@
   ![Two terminal dependencies](./backend/images/two_terminal_dependencies.png)
 - Start the back-end of the project in the first terminal
   ```bash
-  cd backend
   npm start
   ```
   This will start the back end at [https://localhost/](https://localhost/)
 - Start the front-end of the project in the second terminal
   ```bash
-  cd frontend
   npm start
   ```
   This will start the front end at [https://localhost:4200/](https://localhost:4200/)
@@ -309,12 +307,6 @@ const categorySchema = new mongoose.Schema({
 });
 
 
-# Bash command for creating the certificate
-openssl genpkey -algorithm RSA -out private.key
-
-openssl req -new -key private.key -out localhost.csr -subj "/CN=localhost"
-
-openssl x509 -req -days 365 -in localhost.csr -signkey private.key -out certificate.crt
 
 # Contribution
 | SID      | Name                 | Score |
